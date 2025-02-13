@@ -60,7 +60,7 @@ class MenuScene: SKScene {
         self.size = view.bounds.size
         createMenu()
         if(AppManager.shared.soundStatus) {
-            SoundManager.soundTrack.playAudio(audio: SoundManager.soundTrack.soundtrack, loop: true, volume: 0.5)
+            //SoundManager.soundTrack.playAudio(audio: SoundManager.soundTrack.soundtrack, loop: true, volume: 0.5)
         }
     }
     

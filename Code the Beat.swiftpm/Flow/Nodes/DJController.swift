@@ -46,27 +46,41 @@ class DJController: SKSpriteNode {
        
     }
     
-    func checkPadClicks(name: String) -> Int {
+    func checkPadClicks(name: String) -> Int? {
         switch name {
         case "BluePadButton1":
-            SoundManager.shared.playAudio(audio: "C", loop: false, volume: 0.5)
+            playSound(noteName: "C", duration: 1.0)
             animateButton(node: buttons[0])
             return 1
         case "RedPadButton1":
-            SoundManager.shared.playAudio(audio: "GMaj", loop: false, volume: 0.5)
+            playSound(noteName: "DMaj", duration: 1.0)
             animateButton(node: buttons[3])
             return 4
         case "GrayPadButton11":
-            SoundManager.shared.playAudio(audio: "BMin", loop: false, volume: 0.5)
+            playSound(noteName: "D", duration: 1.0)
             animateButton(node: buttons[1])
             return 2
         case "GrayPadButton12":
-            SoundManager.shared.playAudio(audio: "FMin", loop: false, volume: 0.5)            
+            playSound(noteName: "GMaj", duration: 1.0)
             animateButton(node: buttons[2])
             return 3
         default:
-            return 0
+            return nil
         }
+    }
+    
+    func playSound(noteName: String, duration: TimeInterval) {
+        let fileName = "\(noteName).mp3"
+        let audioNode = SKAudioNode(fileNamed: fileName)
+        audioNode.autoplayLooped = false
+        
+        addChild(audioNode)
+        audioNode.run(SKAction.play())
+        
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: duration),
+            SKAction.run { audioNode.removeFromParent() }
+        ]))
     }
     
     

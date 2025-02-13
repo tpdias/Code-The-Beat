@@ -11,7 +11,7 @@ class FirstLevelScene: SKScene {
     var secondLineNode: CodeNode
     var codeBackground: SKNode
     let beatbot: Beatbot
-    var isPianoBlocked: Bool = true
+    var isPianoBlocked: Bool = false
     
     var chats: [String] = [
         "Let's begin learning how to represent a note in code!",
@@ -46,14 +46,7 @@ class FirstLevelScene: SKScene {
     override func didMove(to view: SKView) {
        
         //Background
-        backgroundColor = .gray
-        let background: SKSpriteNode = SKSpriteNode(imageNamed: "firstGameBackground")
-        background.size = size
-        background.anchorPoint = CGPoint(x: 0, y: 0)
-        background.position = CGPoint(x: 0, y: 0)
-        background.zPosition = -1
-        background.alpha = 0.7
-        addChild(background)
+        backgroundColor = UIColor(AppColors.background)
         
         pianoNode.zPosition = 1
         pianoNode.position.x = self.size.width/2
@@ -90,26 +83,27 @@ class FirstLevelScene: SKScene {
                 pauseNode.checkPauseNodePressed(view: self, touchedNode: touchedNode)
                 if(!isPianoBlocked) {
                     if let note = pianoNode.checkTouchedNote(touchedNode) {
+                        let particle = ParticleNote(position: location)
+                        addChild(particle)
                         chatNode.addNextButton()
                         if curChat == 2 {
                             codeNode.defineVariableVelue(value: note)
                             isPianoBlocked = true
+                            nextChat()
                             run(SKAction.wait(forDuration: 0.5)) {
-                                self.nextChat()
                                 self.isPianoBlocked = false
                             }
                             break
                         } else {
                             if curChat == 3 {
+                                nextChat()
                                 self.addChild(secondLineNode)  
                                 self.secondLineNode.defineVariableVelue(value: note)
-                                self.run(SKAction.wait(forDuration: 0.5)) {
-                                    self.nextChat()
-                                }
+                                
                                 break
                             } 
                             else {
-                                if curChat >= 3 {
+                                if curChat > 3 {
                                     self.secondLineNode.defineVariableVelue(value: note)
                                 }
                             }
@@ -162,7 +156,7 @@ class FirstLevelScene: SKScene {
             }
             if(curChat == 2 || curChat == 3) {
                 isPianoBlocked = false
-                chatNode.removeNextButton()
+                chatNode.lockButton()
             }
         }
     }

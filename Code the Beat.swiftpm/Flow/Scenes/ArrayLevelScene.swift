@@ -25,10 +25,17 @@ class ArrayLevelScene: SKScene {
         "Each pad is programmed with one of these chords. To use them in our beat, we need to store them in an array!",
         "An array is a special type of variable that holds multiple values. Instead of storing chords in separate variables, we can use one array to store them all!",
         "Try dragging the chord pads into the slots above to build our chord progression!",
-        "Awesome! Now our array holds all the chords we need for our track!"
+        "Awesome! Now our array holds all the chords we need for our track!",
+        
+        "Now that we have our chord sequence, let’s turn it into a loop!",
+        "Notice that when you *press the Play* button, the sequence plays only once, but it iterates for every chord with a * for *.",
+        "Try pressing the loop button to see the loop function in the code section!",
+        "Nice!"
+        
     ]
     var curChat: Int = 0
     var beatbot: Beatbot
+    var loopNode: LoopNode
     
     override init(size: CGSize) {
         SoundManager.soundTrack.stopSounds()
@@ -46,6 +53,8 @@ class ArrayLevelScene: SKScene {
         beatbot = Beatbot(size: CGSize(width: size.width*0.895/4, height: size.width/4), position: CGPoint(x: size.width - 150, y: size.height/2 - 100))
         beatbot.xScale = -1
         
+        loopNode = LoopNode(size: size)
+        
         super.init(size: size)
 
         self.size = size
@@ -58,23 +67,16 @@ class ArrayLevelScene: SKScene {
     override func didMove(to view: SKView) {
         
         //Background
-        backgroundColor = .black
-        let background: SKSpriteNode = SKSpriteNode(imageNamed: "firstGameBackground")
-        background.size = size
-        background.anchorPoint = CGPoint(x: 0, y: 0)
-        background.position = CGPoint(x: 0, y: 0)
-        background.zPosition = -1
-        background.alpha = 0.7
-        addChild(background)
+        backgroundColor = UIColor(AppColors.tertiaryBackground)
         
         
-        codeBackground = SKSpriteNode(texture: SKTexture(imageNamed: "FuncNodeBackground"), size: CGSize(width: 500, height: 450)) 
+        codeBackground = SKSpriteNode(texture: SKTexture(imageNamed: "FuncNodeBackground"), size: CGSize(width: 530, height: 450)) 
         
-        codeBackground.position = CGPoint(x: 275, y: size.height - 500)
+        codeBackground.position = CGPoint(x: 265, y: size.height - 500)
         codeBackground.zPosition = 1
         
         chordsArrayNode.setupArray()
-        chordsArrayNode.position = CGPoint(x: codeBackground.position.x - 225, y: codeBackground.position.y + 180)
+        chordsArrayNode.position = CGPoint(x: codeBackground.position.x - 245, y: codeBackground.position.y + 180)
         chordsArrayNode.zPosition = 2
         
         let side = 150.0 
@@ -107,7 +109,7 @@ class ArrayLevelScene: SKScene {
                 break
             }
             button.position = position
-            button.zPosition = 3
+            button.zPosition = 10
             
             
             let label = SKLabelNode(text: chords[i])
@@ -122,12 +124,12 @@ class ArrayLevelScene: SKScene {
         }
         
         
-        slotsBackground.position = CGPoint(x: size.width*3/5, y: size.height - side * 0.8)
+        slotsBackground.position = CGPoint(x: size.width*3/5, y: size.height - side)
         slotsBackground.zPosition = 1
         addChild(slotsBackground)
     
         for i in 0..<4 {
-            let slot = SKSpriteNode(texture: SKTexture(imageNamed: "slotChord"), size: CGSize(width: side*1.05, height: side*1.05))
+            let slot = SKSpriteNode(texture: SKTexture(imageNamed: "slot3"), size: CGSize(width: side*1.05, height: side*1.05))
             slot.position = CGPoint(x: slotsBackground.position.x + side*1.2*CGFloat(i) + side * 0.2 - size.width*3/13.25, y: slotsBackground.position.y)
             slot.zPosition = 2
             slot.name = "slot\(i)"
@@ -160,6 +162,7 @@ class ArrayLevelScene: SKScene {
                 
                 if(name.contains("Button") && AppManager.shared.soundStatus && name != "nextButtonGray" && !name.contains("Pad")) {
                     SoundManager.shared.playButtonSound()
+                    checkLoopButtons(name: name)
                     continue
                 }
                 if(name.contains("Toggle") && AppManager.shared.soundStatus) {
@@ -167,69 +170,19 @@ class ArrayLevelScene: SKScene {
                     continue
                 }           
                 //drag
-                if name.contains("chordSquare") {
+                if name.contains("chordSquare") && isDragOn {
                     if let button = touchedNode as? SKSpriteNode {
-                        squareTouch(button: button)
+                        squareTouch(button: button, location: location)
                     }
                     else {
                         if let button = touchedNode.parent as? SKSpriteNode {
-                            squareTouch(button: button)
+                            squareTouch(button: button, location: location)                            
                         }
                     }
                 }
+                
             }
         }
-    }
-    
-    func squareTouch(button: SKSpriteNode) {
-        for slot in buttonSlots {
-            if let occupiedButton = slot.userData?["occupiedBy"] as? SKSpriteNode, occupiedButton == button {
-                slot.userData?["occupiedBy"] = nil 
-                if let index = getChordIndex(button: button) {
-                    chordsArray[index] = ""  
-                    chordsArrayNode.removeElementArray(index: index)
-                    slot.run(SKAction.repeatForever(SKAction.animate(with: slotTextures, timePerFrame: 0.3)))
-                    changeSquareColor(square: button, state: 1)
-                    
-                }
-            }
-        }
-        
-        if(isDragOn) {
-            draggedButton = button
-            button.zPosition += 1
-        }
-    }
-    func getSquareIndex(button: SKSpriteNode) -> Int?  {
-        guard let buttonName = button.name,
-              let lastChar = buttonName.last,  
-                let index = Int(String(lastChar)) else { return nil }
-        return index
-    }
-    
-    func changeSquareColor(square: SKSpriteNode, state: Int) {
-        switch getSquareIndex(button: square) {
-        case 0: 
-            square.texture = SKTexture(imageNamed: "chordSquare\(state)")
-        case 1:
-            square.texture = SKTexture(imageNamed: "chordSquareGold\(state)")
-        case 2:
-            square.texture = SKTexture(imageNamed: "chordSquareSeeBlue\(state)")
-        case 3:
-            square.texture = SKTexture(imageNamed: "chordSquareCyan\(state)")
-        default:
-            square.texture = SKTexture(imageNamed: "chordSquare\(state)")
-        }
-    }
-    
-    func getChordIndex(button: SKSpriteNode) -> Int? {
-        guard let buttonName = button.name,
-              let lastChar = buttonName.last,  
-              let index = Int(String(lastChar)),
-              index < chords.count else { return nil }
-        
-        guard let finalIndex = chordsArray.firstIndex(of: chords[index]) else { return nil }
-        return finalIndex
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -284,15 +237,121 @@ class ArrayLevelScene: SKScene {
         draggedButton = nil
     }
     
+    func checkLoopButtons(name: String) {
+        if let loopButton = loopNode.checkLoopTouch(name: name) {
+            switch loopButton {
+            case 1:
+                playButtonPressed()
+            case 2:
+                loopButtonPressed()
+            case 3:
+                stopButtonPressed()
+            default:
+                break
+            }
+        }
+    }
+    
+    func squareTouch(button: SKSpriteNode, location: CGPoint) {
+        let particle = ParticleNote(position: location)
+        addChild(particle)
+        
+        playSquareSound(button: button)
+        
+        for slot in buttonSlots {
+            if let occupiedButton = slot.userData?["occupiedBy"] as? SKSpriteNode, occupiedButton == button {
+                slot.userData?["occupiedBy"] = nil 
+                if let index = getChordIndex(button: button) {
+                    chordsArray[index] = ""  
+                    chordsArrayNode.removeElementArray(index: index)
+                    slot.run(SKAction.repeatForever(SKAction.animate(with: slotTextures, timePerFrame: 0.3)))
+                    changeSquareColor(square: button, state: 1)
+                }
+            }
+        }
+        
+        if isDragOn {
+            draggedButton = button
+            button.zPosition += 1
+        }
+    }
+    
+    func playSquareSound(button: SKSpriteNode) {
+        guard let index = getSquareIndex(button: button), index < chords.count else { return }
+        let noteName = chords[index] 
+        
+        let soundFileName: String
+        switch noteName {
+        case "Em":
+            soundFileName = "EMin"
+        case "C":
+            soundFileName = "CMaj"
+        case "G":
+            soundFileName = "GMaj"
+        case "D":
+            soundFileName = "DMaj"
+        default:
+            return 
+        }
+        
+        playSound(noteName: soundFileName, duration: 1.0)
+    }
+    
+    func playSound(noteName: String, duration: TimeInterval) {
+        let fileName = "\(noteName).mp3"
+        let audioNode = SKAudioNode(fileNamed: fileName)
+        audioNode.autoplayLooped = false
+        
+        addChild(audioNode)
+        audioNode.run(SKAction.play())
+        
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: duration),
+            SKAction.run { audioNode.removeFromParent() }
+        ]))
+    }
+    
+    func getSquareIndex(button: SKSpriteNode) -> Int?  {
+        guard let buttonName = button.name,
+              let lastChar = buttonName.last,  
+                let index = Int(String(lastChar)) else { return nil }
+        return index
+    }
+    
+    func changeSquareColor(square: SKSpriteNode, state: Int) {
+        switch getSquareIndex(button: square) {
+        case 0: 
+            square.texture = SKTexture(imageNamed: "chordSquare\(state)")
+        case 1:
+            square.texture = SKTexture(imageNamed: "chordSquareGold\(state)")
+        case 2:
+            square.texture = SKTexture(imageNamed: "chordSquareSeeBlue\(state)")
+        case 3:
+            square.texture = SKTexture(imageNamed: "chordSquareCyan\(state)")
+        default:
+            square.texture = SKTexture(imageNamed: "chordSquare\(state)")
+        }
+    }
+    
+    func getChordIndex(button: SKSpriteNode) -> Int? {
+        guard let buttonName = button.name,
+              let lastChar = buttonName.last,  
+                let index = Int(String(lastChar)),
+              index < chords.count else { return nil }
+        
+        guard let finalIndex = chordsArray.firstIndex(of: chords[index]) else { return nil }
+        return finalIndex
+    }
+    
+    
     func checkSlotsCompletion() {
         var count = 0
-        print(chordsArray)
         for chord in chordsArray {
             if chord != "" {
                 count += 1
             }
         }
-        if(count == 4) {
+        if(count == 4 && curChat == 3) {
             nextChat()
             chatNode.addNextButton()
         }
@@ -307,19 +366,40 @@ class ArrayLevelScene: SKScene {
         draggedButton = nil
     }
     
-    override func update(_ currentTime: TimeInterval) {
+    func playButtonPressed() {
+        removeCode()
+        setupForCode()
+        if(curChat == 6) {
+            chatNode.addNextButton()
+        }
         
+    }
+    
+    func loopButtonPressed() {
+        print("loop precionado")
+        removeCode()
+        setupLoopCode()
+        if(curChat == 7) {
+            chatNode.addNextButton()
+        }
+    }
+    
+    func stopButtonPressed() {
+        removeCode()
     }
     
     func transitionToNextScene() {
         let wait = SKAction.wait(forDuration: 1)
+        
         self.run(wait) {
-            let arrayLevel = ArrayLevelScene(size: self.size)
+            let finalArray = self.chordsArray.compactMap { $0 }
+            let arrayLevel = LoopLevelScene(size: self.size, chords: finalArray)
             arrayLevel.scaleMode = self.scaleMode
             self.view?.presentScene(arrayLevel)
         }
+        
         self.run(SKAction.fadeOut(withDuration: 1))
-    }       
+    }     
     
     func addElement(element: String, index: Int) {
         guard let lastChar = element.last, let j = Int(String(lastChar)), j < chords.count else { return }
@@ -338,7 +418,7 @@ class ArrayLevelScene: SKScene {
     
     func nextChat() {
         curChat += 1
-        if(curChat >= 5) {
+        if(curChat >= 8) {
             chatNode.changeButtonColor()
             transitionToNextScene()
         }
@@ -355,9 +435,189 @@ class ArrayLevelScene: SKScene {
             }
             if(curChat == 3) {
                 isDragOn = true 
-                chatNode.removeNextButton()
+                chatNode.lockButton()
+            }
+            if(curChat == 5) {
+                self.backgroundColor = UIColor(AppColors.quaternaryBackground)
+                addChild(loopNode)
+                setupSequentialCode()
+                self.isDragOn = false
+                chordsArrayNode.removeAllChildren()
+            }
+            if(curChat == 6 || curChat == 7) {
+                chatNode.lockButton()
             }
         }
     }
+    
+    func setupSequentialCode(down: Bool = false) {
+        let fontSize = chordsArrayNode.fontSize
+        if let firstLine = childNode(withName: "firstLine") { return }
+        let funcText = "playChord(chord: " 
+        let firstLine = FuncNode(funcText: funcText, value: chordsArray[0]!, fontSize: fontSize)
+        let secondLine = FuncNode(funcText: funcText, value: chordsArray[1]!, fontSize: fontSize)
+        let thirdLine = FuncNode(funcText: funcText, value: chordsArray[2]!, fontSize: fontSize)
+        let fourthLine = FuncNode(funcText: funcText, value: chordsArray[3]!, fontSize: fontSize)
+        
+        let baseLine = fontSize/6.0
+        let height = down ? 1.0 : 0.0
+        
+        firstLine.position = chordsArrayNode.position
+        firstLine.position.y = down ? firstLine.position.y - baseLine * height - fontSize * 1.2 * height : firstLine.position.y
+        
+        secondLine.position = CGPoint(x: firstLine.position.x, y: firstLine.position.y - baseLine * 1 - fontSize * 1.2 * 1)
+        thirdLine.position = CGPoint(x: firstLine.position.x, y: firstLine.position.y - baseLine * 2 - fontSize * 1.2 * 2)
+        fourthLine.position = CGPoint(x: firstLine.position.x, y: firstLine.position.y - baseLine * 3 - fontSize * 1.2 * 3)
+        
+        firstLine.name = "firstLine"
+        secondLine.name = "secondLine"
+        thirdLine.name = "thirdLine"
+        fourthLine.name = "fourthLine"
+     
+        firstLine.zPosition = 4
+        secondLine.zPosition = 4
+        thirdLine.zPosition = 4
+        fourthLine.zPosition = 4
+        
+        addChild(firstLine)
+        addChild(secondLine)
+        addChild(thirdLine)
+        addChild(fourthLine)
+    }
+    
+    func setupLoopCode() {
+        let fontSize = chordsArrayNode.fontSize
+        setupForCode(down: true)
+        let baseX = chordsArrayNode.position.x
+        let baselineOffset = fontSize/6.0
+        let whileCode = SKLabelNode(text: "while")
+        whileCode.fontName = AppManager.shared.appFont
+        whileCode.fontSize = fontSize
+        whileCode.fontColor = UIColor(AppColors.secondary)
+        whileCode.horizontalAlignmentMode = .left
+        whileCode.verticalAlignmentMode = .baseline
+        whileCode.position = CGPoint(x: baseX, y: codeBackground.position.y + 180.0 - baselineOffset - fontSize * 1.2)
+        
+        let middleText = SKLabelNode(text: "(")
+        middleText.fontName = AppManager.shared.appFont
+        middleText.fontSize = fontSize
+        middleText.fontColor = UIColor(AppColors.primary)
+        middleText.horizontalAlignmentMode = .left
+        middleText.verticalAlignmentMode = .baseline
+        middleText.position = CGPoint(x: whileCode.frame.maxX + 1, y: whileCode.position.y)
+        
+        let trueText = SKLabelNode(text: "true")
+        trueText.fontName = AppManager.shared.appFont
+        trueText.fontSize = fontSize
+        trueText.fontColor = UIColor(AppColors.secondary)
+        trueText.horizontalAlignmentMode = .left
+        trueText.verticalAlignmentMode = .baseline
+        trueText.position = CGPoint(x:  middleText.frame.maxX, y: whileCode.position.y)
+        
+        let endText = SKLabelNode(text: ") {")
+        endText.fontName = AppManager.shared.appFont
+        endText.fontSize = fontSize
+        endText.fontColor = UIColor(AppColors.primary)
+        endText.horizontalAlignmentMode = .left
+        endText.verticalAlignmentMode = .baseline
+        endText.position = CGPoint(x:  trueText.frame.maxX, y: whileCode.position.y)
+        
+        let endCodeLabel = SKLabelNode(text: "}")
+        endCodeLabel.fontName = AppManager.shared.appFont
+        endCodeLabel.fontSize = fontSize
+        endCodeLabel.fontColor = UIColor(AppColors.primary)
+        endCodeLabel.horizontalAlignmentMode = .left
+        endCodeLabel.verticalAlignmentMode = .baseline
+        endCodeLabel.position = CGPoint(x: baseX, y: whileCode.position.y - baselineOffset * (4) - fontSize * 1.2 * (5))
+        
+        whileCode.name = "while"
+        middleText.name = "middle"
+        endText.name = "end"
+        endCodeLabel.name = "endCode"
+        trueText.name = "true"
+        
+        whileCode.zPosition = 4
+        middleText.zPosition = 4
+        endText.zPosition = 4
+        endCodeLabel.zPosition = 4
+        trueText.zPosition = 4
+        
+        addChild(whileCode)
+        addChild(middleText)
+        addChild(trueText)
+        addChild(endText)
+        addChild(endCodeLabel)
+    }
+    
+    func removeCode() {
+        // Elementos do código sequencial (playChord individualmente)
+        let sequentialNodes = ["firstLine", "secondLine", "thirdLine", "fourthLine"]
+        
+        // Elementos do código de loop `while`
+        let whileNodes = ["while", "middle", "end", "endCode", "true"]
+        
+        // Elementos do código de loop `for`
+        let forNodes = ["for", "variableChord", "inKeyword", "chordsArrayText", "openBracket", "playChordText", "closeBracket"]
+        
+        // Função auxiliar para remover nós da cena
+        func removeNodes(_ names: [String]) {
+            for name in names {
+                if let node = childNode(withName: name) {
+                    node.removeFromParent()
+                }
+            }
+        }
+        
+        // Remove cada grupo de código separadamente
+        chordsArrayNode.removeAllChildren()
+        removeNodes(sequentialNodes)
+        removeNodes(whileNodes)
+        removeNodes(forNodes)
+    }
+    
+    func setupForCode(down: Bool = false) {
+        removeCode() // Limpa o código anterior
+        chordsArrayNode.removeAllChildren()
+        let fontSize = chordsArrayNode.fontSize
+        chordsArrayNode.arraySecondLine(values: self.chords)
+        chordsArrayNode.position.y = codeBackground.position.y + 315.0
+        chordsArrayNode.zPosition = 4
+        
+        let baseX = down ? chordsArrayNode.position.x + fontSize * 1.5 : chordsArrayNode.position.x
+        let baselineOffset = fontSize / 6.0
+        let baseY = down ? codeBackground.position.y + 180.0 - baselineOffset - 2 * fontSize * 1.2 : codeBackground.position.y + 180.0 - baselineOffset - fontSize * 1.2
 
+        // Criando a estrutura do loop `for`
+        let forKeyword = createCodeLabel(text: "for", color: AppColors.secondary, position: CGPoint(x: baseX, y: baseY), fontSize: fontSize)
+        let variableChord = createCodeLabel(text: "chord", color: AppColors.primary, position: CGPoint(x: forKeyword.frame.maxX + fontSize, y: baseY), fontSize: fontSize)
+        let inKeyword = createCodeLabel(text: "in", color: AppColors.secondary, position: CGPoint(x: variableChord.frame.maxX + fontSize, y: baseY), fontSize: fontSize)
+        let chordsArrayText = createCodeLabel(text: "chords", color: AppColors.primary, position: CGPoint(x: inKeyword.frame.maxX + fontSize, y: baseY), fontSize: fontSize)
+        let openBracket = createCodeLabel(text: "{", color: AppColors.primary, position: CGPoint(x: chordsArrayText.frame.maxX + fontSize, y: baseY), fontSize: fontSize)
+
+        let playChordText = FuncNode(funcText: "playChord(chord: ", value: "chord", fontSize: fontSize)
+        playChordText.position = CGPoint(x: baseX + 20, y: openBracket.position.y - baselineOffset * 2 - fontSize * 1.2 * 1)
+
+        playChordText.codeTextWhite.text = "chord"
+        playChordText.zPosition = 4
+        playChordText.codeTextFinalParenteses.position.x -= fontSize
+        
+        let closeBracket = createCodeLabel(text: "}", color: AppColors.primary, position: CGPoint(x: baseX, y: playChordText.position.y - baselineOffset * 2 - fontSize * 1.2 * 1), fontSize: fontSize)
+
+        forKeyword.name = "for"
+        variableChord.name = "variableChord"
+        inKeyword.name = "inKeyword"
+        chordsArrayText.name = "chordsArrayText"
+        openBracket.name = "openBracket"
+        playChordText.name = "playChordText"
+        closeBracket.name = "closeBracket"
+
+        addChild(forKeyword)
+        addChild(variableChord)
+        addChild(inKeyword)
+        addChild(chordsArrayText)
+        addChild(openBracket)
+        addChild(playChordText)
+        addChild(closeBracket)
+    }
+    
 }

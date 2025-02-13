@@ -92,7 +92,19 @@ class ChatNode: SKNode {
         }
     }
     func addNextButton() {
-        if let parent = nextButtonTemp.parent { return }
+        if let parent = nextButtonTemp.parent { 
+            if(nextButtonTemp.name == "nextButtonGray") {
+                self.nextButtonTemp.texture = SKTexture(imageNamed: "RightButton")
+                self.nextButtonTemp.name = "nextButtonGreen"
+            }
+            return
+        }
         addChild(nextButtonTemp)
+    }
+    
+    func lockButton() {
+        nextButtonTemp.removeAllActions()
+        nextButtonTemp.texture = SKTexture(imageNamed: "RightButtonGray")
+        nextButtonTemp.name = "nextButtonGray"
     }
 }

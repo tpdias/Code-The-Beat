@@ -83,7 +83,7 @@ class PianoNode: SKNode {
         if let noteName = node.name { 
             if (noteNames.contains(noteName)) {
                 guard let note = node as? SKSpriteNode else { return nil }
-                SoundManager.shared.playSound(soundName: noteName, fileType: "mp3")
+                playSound(noteName: noteName, duration: 1.0)
                 animateNote(node: note)
                 return noteName
             }
@@ -91,11 +91,27 @@ class PianoNode: SKNode {
         return nil
     }
     
+    func playSound(noteName: String, duration: TimeInterval) {
+        let fileName = "\(noteName).mp3"
+        let audioNode = SKAudioNode(fileNamed: fileName)
+        audioNode.autoplayLooped = false
+        
+        addChild(audioNode)
+        audioNode.run(SKAction.play())
+        
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: duration),
+            SKAction.run { audioNode.removeFromParent() }
+        ]))
+    }
+
     func animateNote(node: SKSpriteNode) {
+        let originalColor = node.color
         node.color = UIColor(AppColors.primary)
-        node.run(SKAction.wait(forDuration: 1)) {
-            node.color = .white
-        }
+        node.run(SKAction.sequence([
+            SKAction.wait(forDuration: 0.2),
+            SKAction.run { node.color = originalColor }
+        ]))
     }
     
 }

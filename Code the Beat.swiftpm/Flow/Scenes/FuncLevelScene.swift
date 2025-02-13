@@ -13,10 +13,9 @@ class FuncLevelScene: SKScene {
     var chats: [String] = [
         "To play sounds, we use a **function**!",
         "Think of functions like buttons on a **DJ Pad**, each button plays a already recorded sound when pressed.",
-        "Try pressing the **blue button** to play the C note.",
-        "Great! Now, the **red button** plays a G chord (G, B, and D) with a single function call, you can see on the code on the left.",
-        "See? We don’t need to replay everything manually, just like in coding we don't need to rewrite code!",
-        "Good job! Let's move on."
+        "Try pressing the 🟦 **cyan button** to play the C note.",
+        "Great! Now, the 🟥 **red button** plays a G chord (G, B, and D) with a single function call, you can see on the code on the left.",
+        "See? We don’t need to replay everything manually, just like in coding we don't need to rewrite code!"
     ]
         var curChat: Int = 0
         
@@ -31,7 +30,7 @@ class FuncLevelScene: SKScene {
             
             djController = DJController(size: CGSize(width: size.width/2.2, height: size.width/2.2))
             
-            funcDeclarationNode = FuncDeclarationNode() 
+            funcDeclarationNode = FuncDeclarationNode(chord: "GMaj", note1: "G", note2: "B", note3: "D")
             funcDeclarationNode.name = "funcDeclarationNode"
             
             super.init(size: size)
@@ -46,14 +45,7 @@ class FuncLevelScene: SKScene {
         override func didMove(to view: SKView) {
             
             //Background
-            backgroundColor = .black
-            let background: SKSpriteNode = SKSpriteNode(imageNamed: "firstGameBackground")
-            background.size = size
-            background.anchorPoint = CGPoint(x: 0, y: 0)
-            background.position = CGPoint(x: 0, y: 0)
-            background.zPosition = -1
-            background.alpha = 0.7
-            addChild(background)
+            backgroundColor = UIColor(AppColors.secondaryBackground)
             
             playSoundNode.zPosition = 2
             playSoundNode.position.x = size.width/2 - 600
@@ -85,26 +77,28 @@ class FuncLevelScene: SKScene {
                 if let name = touchedNode.name {
                     pauseNode.checkPauseNodePressed(view: self, touchedNode: touchedNode)
                     
-                    let button = djController.checkPadClicks(name: name)
-                    if(curChat > 0) {
-                        switch button {
-                        case 1: 
-                            playNote(note: "C")
-                            if(curChat == 2) {
-                                nextChat()
+                    if let button = djController.checkPadClicks(name: name) {
+                        let particle = ParticleNote(position: location)
+                        addChild(particle)
+                        if(curChat > 0) {
+                            switch button {
+                            case 1: 
+                                playNote(note: "C")
+                                if(curChat == 2) {
+                                    chatNode.addNextButton()
+                                }
+                            case 2:
+                                playNote(note: "D")
+                            case 3:
+                                playChord(chord: "DMin", note1: "D", note2: "F", note3: "A")
+                            case 4:
+                                playChord(chord: "GMaj", note1: "G", note2: "B", note3: "D")
+                                if(curChat == 3) {
+                                    chatNode.addNextButton()
+                                }
+                            default:
+                                break
                             }
-                        case 2:
-                            playNote(note: "D")
-                        case 3:
-                            playNote(note: "E")
-                        case 4:
-                            playChord()
-                            if(curChat == 3) {
-                                chatNode.addNextButton()
-                                nextChat()
-                            }
-                        default:
-                            break
                         }
                     }
                     if(touchedNode.name == "nextButtonGreen") {
@@ -150,9 +144,10 @@ class FuncLevelScene: SKScene {
         }
     }
     
-    func playChord() {
+    func playChord(chord: String, note1: String, note2: String, note3: String) {
         guard let soundName = playSoundNode.name,
               let declarationName = funcDeclarationNode.name else { return}
+        funcDeclarationNode.changeChord(chord: chord, note1: note1, note2: note2, note3: note3)
         if(childNode(withName: soundName) != nil) {
             playSoundNode.removeFromParent()
         }
@@ -163,7 +158,7 @@ class FuncLevelScene: SKScene {
 
     
         func nextChat() {
-            if(curChat >= 5) {
+            if(curChat >= 4) {
                 chatNode.changeButtonColor()
                 transitionToNextScene()
             }
@@ -176,7 +171,7 @@ class FuncLevelScene: SKScene {
                 }
                 if(curChat == 2 || curChat == 3) {
                     
-                    chatNode.removeNextButton()
+                    chatNode.lockButton()
                 }
             }
         }

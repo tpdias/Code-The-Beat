@@ -84,23 +84,57 @@ class CodeNode: SKNode {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setupArray() {
+    func setupArray(values: [String] = [" ", " ", " ", " "]) {
         self.codeTextWhite.removeFromParent()
         self.codeTextBlue.fontSize = fontSize
         self.codeTextPink.fontSize = fontSize
         self.codeTextArray.fontSize = fontSize
         self.codeTextEquals.fontSize = fontSize
         addChild(codeTextArray)
-        let secondLine = CodeNode(varOrLet: "", name: "chordsArray", type: false, equals: true, value: "", fontSize: fontSize)
-        secondLine.codeTextWhite.text = "[\" \", \" \", \" \", \" \"]"
-        secondLine.position = CGPoint(x: 0 - 25, y: 0 - baselineOffset * (arrayLineCount - 1) - fontSize * 1.2 * (arrayLineCount - 1))
-        secondLine.codeTextWhite.fontColor = .white
-        addChild(secondLine)
+        arraySecondLine(values: values)
     }
+    
+    func arraySecondLine(values: [String] = [" ", " ", " ", " "]) {
+        let baseX = 0.0
+        let baseY = -baselineOffset * (arrayLineCount - 1) - fontSize * 1.2 * (arrayLineCount - 1)
+        let spacing = AppManager.shared.fontSize * 0.8  
+        
+        let chordsArrayLabel = createCodeLabel(text: "chordsArray", color: AppColors.primary, position: CGPoint(x: baseX, y: baseY), fontSize: fontSize)
+        
+        let equals = createCodeLabel(text: "=", color: .white, position: CGPoint(x: chordsArrayLabel.position.x + chordsArrayLabel.frame.width + spacing, y: baseY), fontSize: fontSize)
+        let openBracket = createCodeLabel(text: "[", color: .white, position: CGPoint(x: equals.position.x + equals.frame.width + spacing, y: baseY), fontSize: fontSize)
+        
+        var valueNodes: [SKLabelNode] = []
+        var commaNodes: [SKLabelNode] = []
+        
+        var currentX = openBracket.position.x + openBracket.frame.width + spacing - 5
+        
+        for (index, value) in values.enumerated() {
+            let valueLabel = createCodeLabel(text: "\"\(value)\"", color: AppColors.secondary, position: CGPoint(x: currentX, y: baseY), fontSize: fontSize)
+            valueNodes.append(valueLabel)
+            currentX += valueLabel.frame.width + spacing * 0.3
+            
+            if index < values.count - 1 {
+                let commaLabel = createCodeLabel(text: ",", color: .white, position: CGPoint(x: currentX, y: baseY), fontSize: fontSize)
+                commaNodes.append(commaLabel)
+                currentX += commaLabel.frame.width + spacing * 0.3
+            }
+        }
+        
+        let closeBracket = createCodeLabel(text: "]", color: .white, position: CGPoint(x: currentX, y: baseY), fontSize: fontSize)
+        
+        addChild(chordsArrayLabel)
+        addChild(equals)
+        addChild(openBracket)
+        valueNodes.forEach { addChild($0) }
+        commaNodes.forEach { addChild($0) }
+        addChild(closeBracket)
+    }
+
     
     func addElementArray(element: String, index: Int) {
         checkMaxLines()
-        let codeTextAddElement = SKLabelNode(text: "chordArray.insert(\"\(element)\", at: \(index))")
+        let codeTextAddElement = SKLabelNode(text: "chordArray.insert(")
         codeTextAddElement.fontColor = UIColor(AppColors.primary)
         codeTextAddElement.fontName = AppManager.shared.appFont
         codeTextAddElement.fontSize = fontSize
@@ -108,13 +142,51 @@ class CodeNode: SKNode {
         codeTextAddElement.verticalAlignmentMode = .baseline
         codeTextAddElement.position = CGPoint(x: 0, y: 0 - baselineOffset * arrayLineCount - fontSize * 1.2 * arrayLineCount)
         codeTextAddElement.name = "element"
+        
+        let element = SKLabelNode(text: "\"\(element)\"")
+        element.fontSize = fontSize
+        element.fontName = AppManager.shared.appFont
+        element.fontColor = .orange
+        element.horizontalAlignmentMode = .left
+        element.verticalAlignmentMode = .baseline
+        element.position = CGPoint(x: codeTextAddElement.frame.maxX, y: codeTextAddElement.position.y)
+        
+        let middleText = SKLabelNode(text: ", at:")
+        middleText.fontSize = fontSize
+        middleText.fontName = AppManager.shared.appFont
+        middleText.fontColor = UIColor(AppColors.primary)
+        middleText.horizontalAlignmentMode = .left
+        middleText.verticalAlignmentMode = .baseline
+        middleText.position = CGPoint(x: element.frame.maxX, y: element.position.y)
+        
+        let position = SKLabelNode(text: " \(index)")
+        position.fontSize = fontSize
+        position.fontName = AppManager.shared.appFont
+        position.fontColor = UIColor(AppColors.tertiary)
+        position.horizontalAlignmentMode = .left
+        position.verticalAlignmentMode = .baseline
+        position.position = CGPoint(x: middleText.frame.maxX + fontSize, y: middleText.position.y)
+        
+        let endText = SKLabelNode(text: ")")
+        endText.fontSize = fontSize
+        endText.fontName = AppManager.shared.appFont
+        endText.fontColor = UIColor(AppColors.primary)
+        endText.horizontalAlignmentMode = .left
+        endText.verticalAlignmentMode = .baseline
+        endText.position = CGPoint(x: position.frame.maxX, y: position.position.y)
+        
+        
         arrayLineCount += 1
         addChild(codeTextAddElement)
+        addChild(element)
+        addChild(middleText)
+        addChild(position)
+        addChild(endText)
     }
     
     func removeElementArray(index: Int) {
         checkMaxLines()
-        let codeTextAddElement = SKLabelNode(text: "chordArray.remove(at: \(index))")
+        let codeTextAddElement = SKLabelNode(text: "chordArray.remove(at:")
         codeTextAddElement.fontColor = UIColor(AppColors.primary)
         codeTextAddElement.fontName = AppManager.shared.appFont
         codeTextAddElement.fontSize = fontSize
@@ -122,12 +194,32 @@ class CodeNode: SKNode {
         codeTextAddElement.verticalAlignmentMode = .baseline
         codeTextAddElement.position = CGPoint(x: 0, y: 0 - baselineOffset * arrayLineCount - fontSize * 1.2 * arrayLineCount)
         codeTextAddElement.name = "element"
+
+        let position = SKLabelNode(text: " \(index)")
+        position.fontSize = fontSize
+        position.fontName = AppManager.shared.appFont
+        position.fontColor = UIColor(AppColors.tertiary)
+        position.horizontalAlignmentMode = .left
+        position.verticalAlignmentMode = .baseline
+        position.position = CGPoint(x: codeTextAddElement.frame.maxX + fontSize, y: codeTextAddElement.position.y)
+        
+        let endText = SKLabelNode(text: ")")
+        endText.fontSize = fontSize
+        endText.fontName = AppManager.shared.appFont
+        endText.fontColor = UIColor(AppColors.primary)
+        endText.horizontalAlignmentMode = .left
+        endText.verticalAlignmentMode = .baseline
+        endText.position = CGPoint(x: position.frame.maxX, y: position.position.y)
+        
+        
         arrayLineCount += 1
+        addChild(position)
         addChild(codeTextAddElement)
+        addChild(endText)
     }
     
     func checkMaxLines() {
-        if(children.count >= 12) {
+        if(children.count >= 45) {
 //            var count = 0.0
 //            for child in children {
 //                guard let name = child.name else { continue }
@@ -142,6 +234,8 @@ class CodeNode: SKNode {
         }
     }
     func defineVariableVelue(value: String) {
+        print("s")
         codeTextWhite.text = "\"\(value)\""
-    }   
+    }
+    
 }

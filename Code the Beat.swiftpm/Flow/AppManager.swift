@@ -135,7 +135,32 @@ struct AppColors {
     static let primary = Color(hex: "00CCBF") 
     static let secondary = Color(hex: "FF5F5D") 
     static let accent = Color(hex: "71A5A1") 
-    static let background = Color(hex: "7A6E68")
-    static let secondaryBackground = Color(hex: "E1A691")
+    
+    static let background = Color(hex: "B8DAD7") 
+    static let secondaryBackground = Color(hex: "F2B4AE") 
+    static let tertiaryBackground = Color(hex: "D1A58C") 
+    static let quaternaryBackground = Color(hex: "A8C4E3") 
+
+    
+    // Supporting Colors
     static let neutral = Color(hex: "BA8970") 
+    static let tertiary = Color(hex: "FFD166") 
+    static let quaternary = Color(hex: "3D5A80") 
+    
+    static let primaryHighlight = Color(hex: "5FFFF2")  
+    static let secondaryHighlight = Color(hex: "FF8A84") 
+    static let tertiaryHighlight = Color(hex: "FFE08D")  
+    static let quaternaryHighlight = Color(hex: "75A9FF") 
+}
+
+func createCodeLabel(text: String, color: Color, position: CGPoint, fontSize: CGFloat = AppManager.shared.fontSize) -> SKLabelNode {
+    let label = SKLabelNode(text: text)
+    label.fontName = AppManager.shared.appFont
+    label.fontSize = fontSize
+    label.fontColor = UIColor(color)
+    label.horizontalAlignmentMode = .left
+    label.verticalAlignmentMode = .baseline
+    label.position = position
+    label.zPosition = 4
+    return label
 }

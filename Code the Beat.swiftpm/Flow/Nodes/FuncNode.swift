@@ -5,8 +5,8 @@ class FuncNode: SKNode {
     var codeTextBlue: SKLabelNode
     var codeTextWhite: SKLabelNode
     var codeTextFinalParenteses: SKLabelNode
-    init(funcText: String, value: String) {
-        let fontSize = AppManager.shared.fontSize
+    init(funcText: String, value: String, fontSize: CGFloat = AppManager.shared.fontSize) {
+        let fontSize = fontSize
         let baselineOffset = fontSize / 6 // Pequeno ajuste para equalizar alturas
         
         codeTextBlue = SKLabelNode(text: funcText)

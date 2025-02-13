@@ -12,7 +12,7 @@ class FuncDeclarationNode: SKNode {
     
     var funcCall: SKLabelNode
     
-    override init() {
+    init(chord: String, note1: String, note2: String, note3: String) {
         let fontSize = AppManager.shared.fontSize
         let baselineOffset = fontSize / 6 // Pequeno ajuste para equalizar alturas
         
@@ -24,7 +24,7 @@ class FuncDeclarationNode: SKNode {
         codeTextPink.verticalAlignmentMode = .baseline
         codeTextPink.position = CGPoint(x: 0, y: baselineOffset)
         
-        codeTextBlue = SKLabelNode(text: " playChordGMaj() {")
+        codeTextBlue = SKLabelNode(text: " playChord\(chord)() {")
         codeTextBlue.fontColor = UIColor(AppColors.primary)
         codeTextBlue.fontName = AppManager.shared.appFont
         codeTextBlue.fontSize = fontSize
@@ -32,9 +32,9 @@ class FuncDeclarationNode: SKNode {
         codeTextBlue.verticalAlignmentMode = .baseline
         codeTextBlue.position = CGPoint(x: codeTextPink.frame.maxX + fontSize, y: baselineOffset)
         
-        funcBody1 = FuncNode(funcText: "playSound(note: ", value: "G")
-        funcBody2 = FuncNode(funcText: "playSound(note: ", value: "B")
-        funcBody3 = FuncNode(funcText: "playSound(note: ", value: "D")
+        funcBody1 = FuncNode(funcText: "playSound(note: ", value: "\(note1)")
+        funcBody2 = FuncNode(funcText: "playSound(note: ", value: "\(note2)")
+        funcBody3 = FuncNode(funcText: "playSound(note: ", value: "\(note3)")
         
         funcBody1.position = CGPoint(x: 0, y: baselineOffset - fontSize * 1.5)
         funcBody2.position = CGPoint(x: 0, y: baselineOffset - fontSize * 3)
@@ -48,7 +48,7 @@ class FuncDeclarationNode: SKNode {
         funcEnding.verticalAlignmentMode = .baseline
         funcEnding.position = CGPoint(x: 0, y: baselineOffset - fontSize * 6)
         
-        funcCall = SKLabelNode(text: "playChordGMaj()") 
+        funcCall = SKLabelNode(text: "playChord\(chord)()") 
         funcCall.fontColor = UIColor(AppColors.primary)
         funcCall.fontName = AppManager.shared.appFont
         funcCall.fontSize = fontSize
@@ -69,6 +69,14 @@ class FuncDeclarationNode: SKNode {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func changeChord(chord: String, note1: String, note2: String, note3: String) {
+        codeTextBlue.text = " playChord\(chord)() {"
+        funcBody1.defineVariableVelue(value: note1)
+        funcBody2.defineVariableVelue(value: note2)
+        funcBody3.defineVariableVelue(value: note3)
+        funcCall.text = "playChord\(chord)()"
     }
     
 }
