@@ -153,7 +153,7 @@ struct AppColors {
     static let quaternaryHighlight = Color(hex: "75A9FF") 
 }
 
-func createCodeLabel(text: String, color: Color, position: CGPoint, fontSize: CGFloat = AppManager.shared.fontSize) -> SKLabelNode {
+func createCodeLabel(text: String, color: Color, position: CGPoint, fontSize: CGFloat = AppManager.shared.fontSize, name: String? = nil) -> SKLabelNode {
     let label = SKLabelNode(text: text)
     label.fontName = AppManager.shared.appFont
     label.fontSize = fontSize
@@ -162,5 +162,8 @@ func createCodeLabel(text: String, color: Color, position: CGPoint, fontSize: CG
     label.verticalAlignmentMode = .baseline
     label.position = position
     label.zPosition = 4
+    if let name = name {
+        label.name = name
+    }
     return label
 }

@@ -367,25 +367,86 @@ class ArrayLevelScene: SKScene {
     }
     
     func playButtonPressed() {
+        stopButtonPressed()
         removeCode()
         setupForCode()
         if(curChat == 6) {
             chatNode.addNextButton()
         }
-        
+        playChordsSequentially()        
     }
     
     func loopButtonPressed() {
-        print("loop precionado")
+        stopButtonPressed()    
         removeCode()
         setupLoopCode()
-        if(curChat == 7) {
+        
+        let loopAction = SKAction.repeatForever(SKAction.sequence([
+            SKAction.run { self.playChordsSequentially() },
+            SKAction.wait(forDuration: Double(chordsArray.count) * 1.3),
+            SKAction.run {
+                for square in self.chordSquares {
+                    self.changeSquareColor(square: square, state: 1)
+                }
+            }
+        ]))
+        
+        run(loopAction, withKey: "loopPlayback")
+        
+        if curChat == 7 {
             chatNode.addNextButton()
         }
     }
     
     func stopButtonPressed() {
         removeCode()
+        removeAction(forKey: "sequential") 
+        removeAction(forKey: "loopPlayback")
+        for square in chordSquares {
+            changeSquareColor(square: square, state: 1)
+        }
+    }
+    
+    func playChordsSequentially() {
+        var actions: [SKAction] = []
+        
+        for chord in chordsArray {
+            guard let chord = chord else { continue }
+            
+            let soundFileName: String
+            switch chord {
+            case "Em":
+                soundFileName = "EMin"
+            case "C":
+                soundFileName = "CMaj"
+            case "G":
+                soundFileName = "GMaj"
+            case "D":
+                soundFileName = "DMaj"
+            default:
+                continue
+            }
+            
+            if let button = chordSquares.first(where: { square in
+                if let label = square.children.first as? SKLabelNode {
+                    return label.text == chord
+                }
+                return false
+            }) {
+                let highlightAction = SKAction.run { self.changeSquareColor(square: button, state: 2) }
+                let playAction = SKAction.run { self.playSound(noteName: soundFileName, duration: 1.3) }
+                let waitAction = SKAction.wait(forDuration: 1.3)
+                let turnOffAction = SKAction.run { self.changeSquareColor(square: button, state: 1) } 
+        
+                
+                actions.append(highlightAction)
+                actions.append(playAction)
+                actions.append(waitAction)
+                actions.append(turnOffAction)
+            }
+        }
+        
+        run(SKAction.sequence(actions), withKey: "sequential")
     }
     
     func transitionToNextScene() {
@@ -393,9 +454,9 @@ class ArrayLevelScene: SKScene {
         
         self.run(wait) {
             let finalArray = self.chordsArray.compactMap { $0 }
-            let arrayLevel = LoopLevelScene(size: self.size, chords: finalArray)
-            arrayLevel.scaleMode = self.scaleMode
-            self.view?.presentScene(arrayLevel)
+            let conditionalScene = ConditionalScene(size: self.size, chords: finalArray)
+            conditionalScene.scaleMode = self.scaleMode
+            self.view?.presentScene(conditionalScene)
         }
         
         self.run(SKAction.fadeOut(withDuration: 1))
@@ -438,15 +499,22 @@ class ArrayLevelScene: SKScene {
                 chatNode.lockButton()
             }
             if(curChat == 5) {
-                self.backgroundColor = UIColor(AppColors.quaternaryBackground)
-                addChild(loopNode)
-                setupSequentialCode()
-                self.isDragOn = false
-                chordsArrayNode.removeAllChildren()
+                transitionToLoop()                
             }
             if(curChat == 6 || curChat == 7) {
                 chatNode.lockButton()
             }
+        }
+    }
+    
+    func transitionToLoop() {
+        self.backgroundColor = UIColor(AppColors.quaternaryBackground)
+        addChild(loopNode)
+        setupSequentialCode()
+        self.isDragOn = false
+        chordsArrayNode.removeAllChildren()
+        for square in chordSquares {
+            changeSquareColor(square: square, state: 1)
         }
     }
     
@@ -550,16 +618,18 @@ class ArrayLevelScene: SKScene {
     }
     
     func removeCode() {
-        // Elementos do código sequencial (playChord individualmente)
         let sequentialNodes = ["firstLine", "secondLine", "thirdLine", "fourthLine"]
         
-        // Elementos do código de loop `while`
-        let whileNodes = ["while", "middle", "end", "endCode", "true"]
+        let whileNodes = ["while", "whileConditionOpen", "whileConditionTrue", "whileConditionClose", "whileOpenBracket", "whileCloseBracket", "middle", "end", "true"]
+        let whileNodes2 = ["endCode"]
         
-        // Elementos do código de loop `for`
-        let forNodes = ["for", "variableChord", "inKeyword", "chordsArrayText", "openBracket", "playChordText", "closeBracket"]
+        let forNodes = ["for", "variableChord", "inKeyword", "chordsArrayText", "loopOpenBracket", "playChordText", "loopCloseBracket"]
         
-        // Função auxiliar para remover nós da cena
+        let chordsArrayNodes = ["chordsArrayLabel", "equals", "openBracket", "closeBracket"]
+        
+        let valueNodes = (0..<4).map { "valueNode\($0)" }
+        let commaNodes = (0..<3).map { "comma\($0)" }
+        
         func removeNodes(_ names: [String]) {
             for name in names {
                 if let node = childNode(withName: name) {
@@ -568,56 +638,85 @@ class ArrayLevelScene: SKScene {
             }
         }
         
-        // Remove cada grupo de código separadamente
         chordsArrayNode.removeAllChildren()
         removeNodes(sequentialNodes)
         removeNodes(whileNodes)
         removeNodes(forNodes)
+        removeNodes(chordsArrayNodes)
+        removeNodes(valueNodes)
+        removeNodes(whileNodes2)
+        removeNodes(commaNodes)
     }
     
     func setupForCode(down: Bool = false) {
         removeCode() // Limpa o código anterior
         chordsArrayNode.removeAllChildren()
-        let fontSize = chordsArrayNode.fontSize
-        chordsArrayNode.arraySecondLine(values: self.chords)
-        chordsArrayNode.position.y = codeBackground.position.y + 315.0
-        chordsArrayNode.zPosition = 4
         
-        let baseX = down ? chordsArrayNode.position.x + fontSize * 1.5 : chordsArrayNode.position.x
+        let fontSize = chordsArrayNode.fontSize
         let baselineOffset = fontSize / 6.0
-        let baseY = down ? codeBackground.position.y + 180.0 - baselineOffset - 2 * fontSize * 1.2 : codeBackground.position.y + 180.0 - baselineOffset - fontSize * 1.2
-
-        // Criando a estrutura do loop `for`
-        let forKeyword = createCodeLabel(text: "for", color: AppColors.secondary, position: CGPoint(x: baseX, y: baseY), fontSize: fontSize)
-        let variableChord = createCodeLabel(text: "chord", color: AppColors.primary, position: CGPoint(x: forKeyword.frame.maxX + fontSize, y: baseY), fontSize: fontSize)
-        let inKeyword = createCodeLabel(text: "in", color: AppColors.secondary, position: CGPoint(x: variableChord.frame.maxX + fontSize, y: baseY), fontSize: fontSize)
-        let chordsArrayText = createCodeLabel(text: "chords", color: AppColors.primary, position: CGPoint(x: inKeyword.frame.maxX + fontSize, y: baseY), fontSize: fontSize)
-        let openBracket = createCodeLabel(text: "{", color: AppColors.primary, position: CGPoint(x: chordsArrayText.frame.maxX + fontSize, y: baseY), fontSize: fontSize)
-
+        let spacing = AppManager.shared.fontSize * 0.8
+        
+        let baseX = chordsArrayNode.position.x
+        let baseY = codeBackground.position.y + 180.0 - (down ? (baselineOffset + 2 * fontSize * 1.2) : (baselineOffset + fontSize * 1.2))
+        let baseY2 = codeBackground.position.y + 180.0
+        
+        chordsArrayNode.arraySecondLine(values: self.chords)
+        chordsArrayNode.position.y = baseY2
+        chordsArrayNode.zPosition = 4        
+        chordsArrayNode.removeFromParent()
+        
+        // Criando linha do array
+        let chordsArrayLabel = createCodeLabel(text: "chordsArray", color: AppColors.primary, position: CGPoint(x: baseX, y: baseY2), fontSize: fontSize, name: "chordsArrayLabel")
+        let equals = createCodeLabel(text: "=", color: .white, position: CGPoint(x: chordsArrayLabel.frame.maxX + spacing, y: baseY2), fontSize: fontSize, name: "equals")
+        let openBracket = createCodeLabel(text: "[", color: .white, position: CGPoint(x: equals.frame.maxX + spacing, y: baseY2), fontSize: fontSize, name: "openBracket")
+        
+        var currentX = openBracket.frame.maxX + spacing - 5
+        var valueNodes: [SKLabelNode] = []
+        var commaNodes: [SKLabelNode] = []
+        
+        let chordsFiltered = chordsArray.compactMap { $0 }
+        for (index, value) in chordsFiltered.enumerated() {
+            let valueLabel = createCodeLabel(text: "\"\(value)\"", color: AppColors.secondary, position: CGPoint(x: currentX, y: baseY2), fontSize: fontSize, name: "valueNode\(index)")
+            valueNodes.append(valueLabel)
+            currentX += valueLabel.frame.width + spacing * 0.3
+            
+            if index < chordsFiltered.count - 1 {
+                let commaLabel = createCodeLabel(text: ",", color: .white, position: CGPoint(x: currentX, y: baseY2), fontSize: fontSize, name: "comma\(index)")
+                commaNodes.append(commaLabel)
+                currentX += commaLabel.frame.width + spacing * 0.3
+            }
+        }
+        
+        let closeBracket = createCodeLabel(text: "]", color: .white, position: CGPoint(x: currentX, y: baseY2), fontSize: fontSize, name: "closeBracket")
+        
+        // Criando estrutura do loop `for`
+        let forKeyword = createCodeLabel(text: "for", color: AppColors.secondary, position: CGPoint(x: baseX, y: baseY), fontSize: fontSize, name: "for")
+        let variableChord = createCodeLabel(text: "chord", color: AppColors.primary, position: CGPoint(x: forKeyword.frame.maxX + spacing, y: baseY), fontSize: fontSize, name: "variableChord")
+        let inKeyword = createCodeLabel(text: "in", color: AppColors.secondary, position: CGPoint(x: variableChord.frame.maxX + spacing, y: baseY), fontSize: fontSize, name: "inKeyword")
+        let chordsArrayText = createCodeLabel(text: "chords", color: AppColors.primary, position: CGPoint(x: inKeyword.frame.maxX + spacing, y: baseY), fontSize: fontSize, name: "chordsArrayText")
+        let loopOpenBracket = createCodeLabel(text: "{", color: AppColors.primary, position: CGPoint(x: chordsArrayText.frame.maxX + spacing, y: baseY), fontSize: fontSize, name: "loopOpenBracket")
+        
         let playChordText = FuncNode(funcText: "playChord(chord: ", value: "chord", fontSize: fontSize)
-        playChordText.position = CGPoint(x: baseX + 20, y: openBracket.position.y - baselineOffset * 2 - fontSize * 1.2 * 1)
-
+        playChordText.position = CGPoint(x: baseX + 20, y: loopOpenBracket.position.y - baselineOffset * 2 - fontSize * 1.2 * 1)
         playChordText.codeTextWhite.text = "chord"
         playChordText.zPosition = 4
         playChordText.codeTextFinalParenteses.position.x -= fontSize
-        
-        let closeBracket = createCodeLabel(text: "}", color: AppColors.primary, position: CGPoint(x: baseX, y: playChordText.position.y - baselineOffset * 2 - fontSize * 1.2 * 1), fontSize: fontSize)
-
-        forKeyword.name = "for"
-        variableChord.name = "variableChord"
-        inKeyword.name = "inKeyword"
-        chordsArrayText.name = "chordsArrayText"
-        openBracket.name = "openBracket"
         playChordText.name = "playChordText"
-        closeBracket.name = "closeBracket"
-
-        addChild(forKeyword)
-        addChild(variableChord)
-        addChild(inKeyword)
-        addChild(chordsArrayText)
-        addChild(openBracket)
-        addChild(playChordText)
+        
+        let loopCloseBracket = createCodeLabel(text: "}", color: AppColors.primary, position: CGPoint(x: baseX, y: playChordText.position.y - baselineOffset * 2 - fontSize * 1.2 * 1), fontSize: fontSize, name: "loopCloseBracket")
+        
+        // Adicionando os nós à cena
+        addChildren([chordsArrayLabel, equals, openBracket])
+        valueNodes.forEach { addChild($0) }
+        commaNodes.forEach { addChild($0) }
         addChild(closeBracket)
+        
+        addChildren([forKeyword, variableChord, inKeyword, chordsArrayText, loopOpenBracket, playChordText, loopCloseBracket])
+    }
+    
+    /// Função auxiliar para adicionar múltiplos filhos à cena
+    func addChildren(_ nodes: [SKNode]) {
+        nodes.forEach { addChild($0) }
     }
     
 }

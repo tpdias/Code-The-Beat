@@ -209,7 +209,7 @@ class MenuScene: SKScene {
                 case "playLabel":
                     if let playButton = self.childNode(withName: "playButton") as? SKSpriteNode {
                         onMenu = false
-                        let gameScene = ArrayLevelScene(size: self.size)
+                        let gameScene = ConditionalScene(size: self.size, chords: ["C", "G", "Em", "D"])
                         gameScene.scaleMode = self.scaleMode
                         
                         if let label = childNode(withName: "playLabel") as? SKLabelNode {
