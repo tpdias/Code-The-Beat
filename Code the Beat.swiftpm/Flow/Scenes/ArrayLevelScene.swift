@@ -2,7 +2,6 @@ import SwiftUI
 import SpriteKit
 
 class ArrayLevelScene: SKScene {
-    var pauseNode: PauseNode
     var chatNode: ChatNode
     var codeBackground: SKNode
 
@@ -28,8 +27,8 @@ class ArrayLevelScene: SKScene {
         "Awesome! Now our array holds all the chords we need for our track!",
         
         "Now that we have our chord sequence, let’s turn it into a loop!",
-        "Notice that when you *press the Play* button, the sequence plays only once, but it iterates for every chord with a * for *.",
-        "Try pressing the loop button to see the loop function in the code section!",
+        "Notice that when you press the Play button, the sequence plays only once, but it iterates for every chord with a for.",
+        "Try pressing the loop button to see the loop function! This time we use a While to repeat the code while the condition is true.",
         "Nice!"
         
     ]
@@ -41,7 +40,6 @@ class ArrayLevelScene: SKScene {
         SoundManager.soundTrack.stopSounds()
         AppManager.shared.inGame = true
         
-        pauseNode = PauseNode(size: size)
         chatNode = ChatNode(nodeSize: size, name: "BeatBot", message: chats[curChat])
         codeBackground = SKSpriteNode()
         
@@ -67,7 +65,13 @@ class ArrayLevelScene: SKScene {
     override func didMove(to view: SKView) {
         
         //Background
-        backgroundColor = UIColor(AppColors.tertiaryBackground)
+        let background = SKSpriteNode(imageNamed: "quarternaryBackground")
+        background.size = size
+        background.anchorPoint = CGPoint(x: 0, y: 0)
+        background.position = CGPoint(x: 0, y: -25)
+        background.zPosition = -1
+        background.alpha = 0.6
+        background.name = "background"
         
         
         codeBackground = SKSpriteNode(texture: SKTexture(imageNamed: "FuncNodeBackground"), size: CGSize(width: 530, height: 450)) 
@@ -145,9 +149,10 @@ class ArrayLevelScene: SKScene {
         }
         
         addChild(chatNode)
-        addChild(pauseNode)   
         addChild(beatbot)
         beatbot.animateTlk()
+        addChild(background)
+
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -155,7 +160,6 @@ class ArrayLevelScene: SKScene {
             let location = touch.location(in: self)
             let touchedNode = atPoint(location)
             if let name = touchedNode.name {
-                pauseNode.checkPauseNodePressed(view: self, touchedNode: touchedNode)
                 if(touchedNode.name == "nextButtonGreen") {
                     nextChat()
                 }
@@ -297,7 +301,7 @@ class ArrayLevelScene: SKScene {
         playSound(noteName: soundFileName, duration: 1.0)
     }
     
-    func playSound(noteName: String, duration: TimeInterval) {
+    func playSound(noteName: String, duration: TimeInterval = 0.5) {
         let fileName = "\(noteName).mp3"
         let audioNode = SKAudioNode(fileNamed: fileName)
         audioNode.autoplayLooped = false
@@ -463,6 +467,7 @@ class ArrayLevelScene: SKScene {
     }     
     
     func addElement(element: String, index: Int) {
+        playSound(noteName: "slotIn")
         guard let lastChar = element.last, let j = Int(String(lastChar)), j < chords.count else { return }
         
         let chord = chords[j]
@@ -508,7 +513,9 @@ class ArrayLevelScene: SKScene {
     }
     
     func transitionToLoop() {
-        self.backgroundColor = UIColor(AppColors.quaternaryBackground)
+        if let background = childNode(withName: "background") as? SKSpriteNode {
+            background.texture = SKTexture(imageNamed: "primaryBackground")
+        }
         addChild(loopNode)
         setupSequentialCode()
         self.isDragOn = false

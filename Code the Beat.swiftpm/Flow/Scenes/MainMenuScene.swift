@@ -60,7 +60,7 @@ class MenuScene: SKScene {
         self.size = view.bounds.size
         createMenu()
         if(AppManager.shared.soundStatus) {
-            //SoundManager.soundTrack.playAudio(audio: SoundManager.soundTrack.soundtrack, loop: true, volume: 0.5)
+            SoundManager.soundTrack.playAudio(audio: SoundManager.soundTrack.soundtrack, loop: true, volume: 0.5)
         }
     }
     
@@ -94,17 +94,17 @@ class MenuScene: SKScene {
         background.alpha = 0.7
         addChild(background)
         
-        //Sound Button
-        let soundButton = SKSpriteNode(imageNamed: "SoundButton")
-        if(!AppManager.shared.soundStatus) {
-            soundButton.texture = SKTexture(imageNamed: "SoundButtonOff")
-        }
-        //soundButton.scale(to: CGSize(width: 48, height: 48)
-        soundButton.scale(to: CGSize(width: size.width / 25, height: size.width / 25))
-        soundButton.position = CGPoint(x: size.width - 100, y: size.height - 100)
-        soundButton.zPosition = 1
-        soundButton.name = "soundButton"
-        addChild(soundButton)
+//        //Sound Button
+//        let soundButton = SKSpriteNode(imageNamed: "SoundButton")
+//        if(!AppManager.shared.soundStatus) {
+//            soundButton.texture = SKTexture(imageNamed: "SoundButtonOff")
+//        }
+//        //soundButton.scale(to: CGSize(width: 48, height: 48)
+//        soundButton.scale(to: CGSize(width: size.width / 25, height: size.width / 25))
+//        soundButton.position = CGPoint(x: size.width - 100, y: size.height - 100)
+//        soundButton.zPosition = 1
+//        soundButton.name = "soundButton"
+//        addChild(soundButton)
         
         
         // First Line
@@ -209,7 +209,7 @@ class MenuScene: SKScene {
                 case "playLabel":
                     if let playButton = self.childNode(withName: "playButton") as? SKSpriteNode {
                         onMenu = false
-                        let gameScene = ConditionalScene(size: self.size, chords: ["C", "G", "Em", "D"])
+                        let gameScene = IntroScene(size: size)
                         gameScene.scaleMode = self.scaleMode
                         
                         if let label = childNode(withName: "playLabel") as? SKLabelNode {
@@ -254,12 +254,12 @@ class MenuScene: SKScene {
                         }
                     }
                     break
-                case "soundButton":  
-                    if let soundButton = touchedNode as? SKSpriteNode {
-                        AppManager.shared.changeSoundStatus()
-                        AppManager.shared.animateSoundButton(button: soundButton)    
-                    }
-                    break
+//                case "soundButton":  
+//                    if let soundButton = touchedNode as? SKSpriteNode {
+//                        AppManager.shared.changeSoundStatus()
+//                        AppManager.shared.animateSoundButton(button: soundButton)    
+//                    }
+//                    break
                 default:
                     break
                 }

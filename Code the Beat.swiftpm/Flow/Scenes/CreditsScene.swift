@@ -11,16 +11,15 @@ class CreditsScene: SKScene {
     
     override init(size: CGSize) {
         let titleFont:CGFloat = 28
-        let textFont:CGFloat = 24
-        creditsText = SKLabelNode(text: "Hi I'm Thiago, a 24 years old Computer Engineering Student from Brazil, currently studying on Germany. I'm an iOS Developer and an Alumni at Apple Developer Academy POA and I love to work on projects that I'm passionate about. I also won the 2024 Swift Student Challenge with my project Parallelo.")
+        let textFont:CGFloat = AppManager.shared.openDyslexicStatus ? 20 : 24
+        creditsText = SKLabelNode(text: "Hi I'm Thiago, a 24 years old Computer Engineering Student from Brazil, currently studying on Germany. I'm an iOS Developer and an Alumni at Apple Developer Academy POA and I love to work on projects that I'm passionate about and to help people learn how to code. I also won the 2024 Swift Student Challenge with my project Parallelo.")
         creditsText.preferredMaxLayoutWidth = size.width / 1.3
         creditsText.numberOfLines = -1
-        creditsText.position = CGPoint(x: size.width/2, y: size.height/2 + 180 - creditsText.frame.size.height)
+        creditsText.position = CGPoint(x: size.width/2, y: size.height/2 + 200 - creditsText.frame.size.height)
         creditsText.zPosition = 1
         creditsText.fontName = AppManager.shared.appFont
         creditsText.fontSize = textFont
         creditsText.fontColor = .white
-        
         
         about = SKLabelNode(text: "About")
         about.position = CGPoint(x: size.width / 2 , y: creditsText.position.y - 50)
@@ -36,9 +35,6 @@ class CreditsScene: SKScene {
         aboutText.fontSize = textFont
         aboutText.fontColor = .white
         aboutText.position = CGPoint(x: size.width/2, y: about.position.y - 100 - aboutText.frame.size.height / 2)
-
-        
-        
         
         copyright = SKLabelNode(text: "Copyright")
         copyright.position = CGPoint(x: size.width / 2 , y: aboutText.position.y - 50)
@@ -46,9 +42,9 @@ class CreditsScene: SKScene {
         copyright.fontName = AppManager.shared.appFont
         copyright.fontSize = titleFont
         
-        copyrightText = SKLabelNode(text: "Soundtrack: Something Wrong with my Dog by Pix\nPrimary Font: Retro Gaming: https://www.dafont.com/retro-gaming.font\nSecondary Font: OpenDyslexic - https://opendyslexic.org/")
+        copyrightText = SKLabelNode(text: "Soundtrack: Something Wrong with my Dog by Pix: https://www.youtube.com/watch?v=ZfTxmwhrMfY\nPrimary Font: Retro Gaming: https://www.dafont.com/retro-gaming.font\nSecondary Font: OpenDyslexic - https://opendyslexic.org/")
         copyrightText.numberOfLines = -1
-        copyrightText.position = CGPoint(x: size.width / 2 , y: copyright.position.y - 100 - copyrightText.frame.size.height / 2)
+        copyrightText.position = CGPoint(x: size.width / 2 , y: copyright.position.y - 140 - copyrightText.frame.size.height / 2)
         copyrightText.fontColor = .white
         copyrightText.preferredMaxLayoutWidth = size.width / 1.3
         copyrightText.fontName = AppManager.shared.appFont

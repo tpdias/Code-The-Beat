@@ -35,30 +35,30 @@ class OptionsScene: SKScene {
         addChild(firstLineLabelB)
         
         
-        //sound
-        
-        let soundLabel = SKLabelNode(text: "Soundtrack")
-        soundLabel.fontSize = 34
-        soundLabel.fontColor = .white
-        soundLabel.fontName = AppManager.shared.appFont
-        soundLabel.position = CGPoint(x: size.width/2, y: size.height/2 + 50)
-        soundLabel.zPosition = 1
-        addChild(soundLabel)
-        
-        
-        let soundSprite = SKSpriteNode(imageNamed: AppManager.shared.soundStatus ? "ToggleOn" : "ToggleOff")
-        soundSprite.position = CGPoint(x: size.width/2, y: soundLabel.position.y - 50)
-        soundSprite.zPosition = 1
-        soundSprite.scale(to: CGSize(width: 96, height: 48))
-        soundSprite.name = "soundToggle"
-        addChild(soundSprite)
+//        //sound
+//        
+//        let soundLabel = SKLabelNode(text: "Soundtrack")
+//        soundLabel.fontSize = 34
+//        soundLabel.fontColor = .white
+//        soundLabel.fontName = AppManager.shared.appFont
+//        soundLabel.position = CGPoint(x: size.width/2, y: size.height/2 + 50)
+//        soundLabel.zPosition = 1
+//        addChild(soundLabel)
+//        
+//        
+//        let soundSprite = SKSpriteNode(imageNamed: AppManager.shared.soundStatus ? "ToggleOn" : "ToggleOff")
+//        soundSprite.position = CGPoint(x: size.width/2, y: soundLabel.position.y - 50)
+//        soundSprite.zPosition = 1
+//        soundSprite.scale(to: CGSize(width: 96, height: 48))
+//        soundSprite.name = "soundToggle"
+//        addChild(soundSprite)
         
         
         let fontLabel = SKLabelNode(text: "OpenDyslexic Font")
         fontLabel.fontSize = 34
         fontLabel.fontName = AppManager.shared.appFont
         fontLabel.fontColor = .white
-        fontLabel.position = CGPoint(x: size.width/2, y: soundSprite.position.y - 100)
+        fontLabel.position = CGPoint(x: size.width/2, y: size.height/2 + 50)
         fontLabel.zPosition = 1
         addChild(fontLabel)
         
@@ -96,12 +96,12 @@ class OptionsScene: SKScene {
                         menuScene.scaleMode = scaleMode
                         performTransition(nextScene: menuScene, button: backButton)
                     }
-                case "soundToggle":
-                    if let soundToggle = touchedNode as? SKSpriteNode {
-                        AppManager.shared.changeSoundStatus()
-                        AppManager.shared.animateToggle(toggle: soundToggle, toggleState: AppManager.shared.soundStatus)
-                    }
-                    break
+//                case "soundToggle":
+//                    if let soundToggle = touchedNode as? SKSpriteNode {
+//                        AppManager.shared.changeSoundStatus()
+//                        AppManager.shared.animateToggle(toggle: soundToggle, toggleState: AppManager.shared.soundStatus)
+//                    }
+//                    break
                 case "fontToggle":
                     if let fontToggle = touchedNode as? SKSpriteNode {
                         AppManager.shared.changeFont()

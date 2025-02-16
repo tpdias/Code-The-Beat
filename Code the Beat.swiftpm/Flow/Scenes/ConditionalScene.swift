@@ -3,7 +3,6 @@ import SpriteKit
 import UIKit
 
 class ConditionalScene: SKScene {
-    var pauseNode: PauseNode
     var chatNode: ChatNode
     var codeBackground: SKNode
     
@@ -18,21 +17,34 @@ class ConditionalScene: SKScene {
 
     var curChat: Int = 0
     var beatbot: Beatbot
+    var inConclusion = false
     
     var chats: [String] = [
         "Let's complete our beat with a drum set to add more groove!",
         "To do this, we'll use conditionals. With `if`, we can compare values using `&&` (AND condition) and `||` (OR condition).",
-        "Each chord will last for 4 beats. Select on the DJ controller which beats you want to hear the basic drum track, and watch the code update in real-time!",
-        "Nice! Now, complete your drum pattern by adding a snare and claps. When you're happy with the beat, click 'Next' to continue!"
+        "Each chord will last for 4 beats. Select on the DJ controller which beats you want to hear the drums, and watch the code update in real-time!",
+        "Nice! Now, complete your drum pattern by adding a snare and claps. When you're happy with the beat, click the next button to continue!"
     ]
+    
+    var conclusionChats: [String] = [
+        "Wow! Listen to your beat playing in full!",
+        "You’ve come a long way. Now, you understand how to use code to create music!",
+        "With variables, functions, loops, and conditionals, you built your own beat from scratch!",
+        "Pretty cool, right? Coding is like making music—it's all about structure and creativity.",
+        "If you’re eager to learn more, tap the Apple logo to explore the Apple Developer documentation and dive deeper into Swift!" ,
+        "Thank you for joining me in this journey, see you!"
+    ]
+    var conclusionCurChat: Int = 0
+    
+    
     var drumsControllerNode: DrumsControllerNode
     var curTempo: Int = 1
+    var conditionalNode = ConditionalNode()
     
     init(size: CGSize, chords: [String]) {
         chordsArray = chords
         SoundManager.soundTrack.stopSounds()
         AppManager.shared.inGame = true
-        pauseNode = PauseNode(size: size)
         chatNode = ChatNode(nodeSize: size, name: "BeatBot", message: chats[curChat])
         beatbot = Beatbot(size: CGSize(width: size.width*0.895/4, height: size.width/4), position: CGPoint(x: size.width - 150, y: size.height/2 - 100))
         beatbot.xScale = -1
@@ -53,13 +65,20 @@ class ConditionalScene: SKScene {
     
     override func didMove(to view: SKView) {
         //Background
-        backgroundColor = UIColor(AppColors.background)
+        let background = SKSpriteNode(imageNamed: "terciaryBackground")
+        background.size = size
+        background.anchorPoint = CGPoint(x: 0, y: 0)
+        background.position = CGPoint(x: 0, y: -25)
+        background.zPosition = -1
+        background.alpha = 0.6
+        background.name = "background"
         
         codeBackground = SKSpriteNode(texture: SKTexture(imageNamed: "FuncNodeBackground"), size: CGSize(width: 530, height: 450)) 
         
         codeBackground.position = CGPoint(x: 265, y: size.height - 500)
         codeBackground.zPosition = 1
-        
+        conditionalNode.position = CGPoint(x: -codeBackground.frame.width/2 + 30, y: +codeBackground.frame.height/2 - 40)
+        codeBackground.addChild(conditionalNode)
         let side = 150.0 
         
         for i in 1...8 {
@@ -85,10 +104,10 @@ class ConditionalScene: SKScene {
             buttonSlots.append(slot)
             slot.run(SKAction.repeatForever(SKAction.animate(with: slotTextures, timePerFrame: 0.2)))
         }
-        
+     
         for (i, chord) in chordsArray.enumerated() {
             let button = SKSpriteNode(texture: SKTexture(imageNamed: "chordSquare1"), size: CGSize(width: side, height: side))
-            button.name = "chordSquare\(chord)"
+            button.name = "chordSquare\(i)"
             button.position = buttonSlots[i].position
             switch chord {
             case "Em":
@@ -109,7 +128,7 @@ class ConditionalScene: SKScene {
             button.zPosition = 10
             
             
-            let label = SKLabelNode(text: chords[i])
+            let label = SKLabelNode(text: chordsArray[i])
             label.fontName = AppManager.shared.appFont
             label.fontColor = .white
             label.fontSize = AppManager.shared.titleFontSize
@@ -122,10 +141,11 @@ class ConditionalScene: SKScene {
         
         
         addChild(chatNode)
-        addChild(pauseNode)   
         addChild(beatbot)
         addChild(drumsControllerNode)
         beatbot.animateTlk()
+        addChild(background)
+
      
     }
     
@@ -134,9 +154,12 @@ class ConditionalScene: SKScene {
             let location = touch.location(in: self)
             let touchedNode = atPoint(location)
             if let name = touchedNode.name {
-                pauseNode.checkPauseNodePressed(view: self, touchedNode: touchedNode)
                 if(touchedNode.name == "nextButtonGreen") {
-                    nextChat()
+                    if(inConclusion) {
+                        nextConclusionChat() 
+                    } else {
+                        nextChat()
+                    }
                 }
                 
                 if(name.contains("Button") && AppManager.shared.soundStatus && name != "nextButtonGray" && !name.contains("Pad")) {
@@ -147,7 +170,13 @@ class ConditionalScene: SKScene {
                     SoundManager.shared.playToggleSound()
                     continue
                 }           
-                drumsControllerNode.checkDrumsToutch(name: name)
+                drumsControllerNode.checkDrumsToutch(name: name, label: conditionalNode.drumTemposValues)                 
+                if name == "appleDeveloper" {
+                    if let url = URL(string: "https://developer.apple.com/documentation/swift/") {
+                        UIApplication.shared.open(url)
+                    }
+                    return
+                }
             }
         }
     }
@@ -195,16 +224,14 @@ class ConditionalScene: SKScene {
     }
     
     func changeSquareColor(square: SKSpriteNode, state: Int) {
-        switch getSquareIndex(button: square) {
-        case 0: 
-            square.texture = SKTexture(imageNamed: "chordSquare\(state)")
-        case 1:
+        guard let squareName = square.name else { return }        
+        if squareName.contains("Gold") {
             square.texture = SKTexture(imageNamed: "chordSquareGold\(state)")
-        case 2:
+        } else if squareName.contains("SeeBlue") {
             square.texture = SKTexture(imageNamed: "chordSquareSeeBlue\(state)")
-        case 3:
+        } else if squareName.contains("Cyan") {
             square.texture = SKTexture(imageNamed: "chordSquareCyan\(state)")
-        default:
+        } else {
             square.texture = SKTexture(imageNamed: "chordSquare\(state)")
         }
     }
@@ -214,7 +241,6 @@ class ConditionalScene: SKScene {
               let lastChar = buttonName.last,  
                 let index = Int(String(lastChar)),
               index < chords.count else { return nil }
-        
         guard let finalIndex = chordsArray.firstIndex(of: chords[index]) else { return nil }
         return finalIndex
     }
@@ -229,7 +255,7 @@ class ConditionalScene: SKScene {
                 }
             }
         ]))
-
+        
         let tempoLoop = SKAction.repeatForever(SKAction.sequence([
             SKAction.wait(forDuration: 1.3/4),
             SKAction.run {
@@ -299,12 +325,12 @@ class ConditionalScene: SKScene {
     }
     
     func nextChat() {
-        curChat += 1
         if(curChat >= 3) {
             chatNode.changeButtonColor()
             transitionToNextScene()
         }
         else {
+            curChat += 1
             beatbot.animateTlk()
             chatNode.changeText(text: chats[curChat])
             if(curChat == 1) {
@@ -322,15 +348,71 @@ class ConditionalScene: SKScene {
     }
     
     func transitionToNextScene() {
+        inConclusion = true
+        chatNode.changeText(text: conclusionChats[conclusionCurChat])
         let wait = SKAction.wait(forDuration: 1)
-        
-        self.run(wait) {
-            let conditionalScene = IntroScene(size: self.size)
-            conditionalScene.scaleMode = self.scaleMode
-            self.view?.presentScene(conditionalScene)
+        self.run(SKAction.fadeOut(withDuration: 0.5)) {
+            if let background = self.childNode(withName: "background") as? SKSpriteNode {
+                background.texture = SKTexture(imageNamed: "conclusionBackground")
+            }
+            self.beatbot.removeFromParent()
+            self.drumsControllerNode.removeFromParent()
+            self.slotsBackground.removeFromParent()            
+            for slot in self.buttonSlots {
+                slot.removeFromParent()
+            }
+            for button in self.chordSquares {
+                button.removeFromParent()
+            }
+            self.codeBackground.removeFromParent()
+            self.codeNode.removeFromParent()
+            self.conditionalNode.removeFromParent()
+            self.run(SKAction.fadeIn(withDuration: 0.5)) {
+                let beatbot = SKSpriteNode(texture: SKTexture(imageNamed: "beatbotDJ1"), size: CGSize(width: self.size.width/2.2, height: self.size.width/2.2))
+                beatbot.run(SKAction.repeatForever(SKAction.animate(with: [SKTexture(imageNamed: "beatbotDJ1"), SKTexture(imageNamed: "beatbotDJ2")], timePerFrame: 0.3)))
+                beatbot.position = CGPoint(x: self.size.width/2, y: self.size.height/2)
+                self.addChild(beatbot)
+                
+                let spawnAction = SKAction.run {
+                    let randomX = CGFloat.random(in: 100...1200)
+                    let randomY = CGFloat.random(in: 300...800)
+                    let randomPosition = CGPoint(x: randomX, y: randomY)
+                    
+                    let note = ParticleNote(position: randomPosition)
+                    self.addChild(note)
+                }                    
+                self.run(SKAction.repeatForever(SKAction.sequence([spawnAction, SKAction.wait(forDuration: 0.5)])))
+            }
         }
-        
-        self.run(SKAction.fadeOut(withDuration: 1))
     }    
     
+    func nextConclusionChat() {
+        if(conclusionCurChat >= 5) {
+            chatNode.changeButtonColor()
+            transitionToMenu()
+        } else {
+            conclusionCurChat += 1
+            chatNode.changeText(text: conclusionChats[conclusionCurChat])
+            if conclusionCurChat == 4 {
+                let appleDeveloper = SKSpriteNode(texture: SKTexture(imageNamed: "appleDeveloper"), size: CGSize(width: 256, height: 256))
+                appleDeveloper.position = CGPoint(x: 200, y: size.height/2)
+                appleDeveloper.name = "appleDeveloper"
+                addChild(appleDeveloper)
+            }
+        }
+    }
+    
+    func transitionToMenu() {
+        let wait = SKAction.wait(forDuration: 1)
+        
+        chatNode.run(SKAction.fadeOut(withDuration: 0.3))
+        
+        self.run(wait) {
+            let menu = MenuScene(size: self.size)
+            menu.scaleMode = self.scaleMode
+            self.view?.presentScene(menu)
+        }
+        self.run(SKAction.fadeOut(withDuration: 1))
+        
+    }     
 }

@@ -2,8 +2,6 @@ import SwiftUI
 import SpriteKit
 
 class FuncLevelScene: SKScene {
-    //pause
-    var pauseNode: PauseNode
     var chatNode: ChatNode
     var playSoundNode: FuncNode
     var codeBackground: SKNode
@@ -11,10 +9,10 @@ class FuncLevelScene: SKScene {
     var djController: DJController
         
     var chats: [String] = [
-        "To play sounds, we use a **function**!",
-        "Think of functions like buttons on a **DJ Pad**, each button plays a already recorded sound when pressed.",
-        "Try pressing the 🟦 **cyan button** to play the C note.",
-        "Great! Now, the 🟥 **red button** plays a G chord (G, B, and D) with a single function call, you can see on the code on the left.",
+        "To play sounds, we use a function!",
+        "Think of functions like buttons on a DJ Pad, each button plays a already recorded sound when pressed.",
+        "Try pressing the cyan button to play the C note.",
+        "Great! Now, the red button plays a G chord (G, B, and D) with a single function call, you can see on the code on the left.",
         "See? We don’t need to replay everything manually, just like in coding we don't need to rewrite code!"
     ]
         var curChat: Int = 0
@@ -23,7 +21,6 @@ class FuncLevelScene: SKScene {
             SoundManager.soundTrack.stopSounds()
             AppManager.shared.inGame = true
             
-            pauseNode = PauseNode(size: size)
             chatNode = ChatNode(nodeSize: size, name: "BeatBot", message: chats[curChat])
             playSoundNode = FuncNode(funcText: "playSound(note: ", value: "C")
             codeBackground = SKSpriteNode()
@@ -45,7 +42,12 @@ class FuncLevelScene: SKScene {
         override func didMove(to view: SKView) {
             
             //Background
-            backgroundColor = UIColor(AppColors.secondaryBackground)
+            let background = SKSpriteNode(imageNamed: "terciaryBackground")
+            background.size = size
+            background.anchorPoint = CGPoint(x: 0, y: 0)
+            background.position = CGPoint(x: 0, y: -25)
+            background.zPosition = -1
+            background.alpha = 0.6
             
             playSoundNode.zPosition = 2
             playSoundNode.position.x = size.width/2 - 600
@@ -64,8 +66,8 @@ class FuncLevelScene: SKScene {
             djController.position = CGPoint(x: size.width/2 + 200, y: size.height/1.75)
             
             addChild(chatNode)
-            addChild(pauseNode)
             addChild(djController)
+            addChild(background)
 
             
         }
@@ -75,7 +77,6 @@ class FuncLevelScene: SKScene {
                 let location = touch.location(in: self)
                 let touchedNode = atPoint(location)
                 if let name = touchedNode.name {
-                    pauseNode.checkPauseNodePressed(view: self, touchedNode: touchedNode)
                     
                     if let button = djController.checkPadClicks(name: name) {
                         let particle = ParticleNote(position: location)

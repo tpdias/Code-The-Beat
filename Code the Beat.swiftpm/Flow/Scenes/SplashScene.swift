@@ -9,7 +9,7 @@ class SplashScene: SKScene {
     var orientationLabel: SKLabelNode
     var textures: [SKTexture] = []
     override init(size: CGSize) {
-        background = SKSpriteNode(imageNamed: "M3Splash0")
+        background = SKSpriteNode(texture: SKTexture(imageNamed: "splash0"), color: .clear, size: CGSize(width: 1024, height: 636))
         if(AppManager.shared.biggerBackground) {
             background.scale(to: CGSize(width: 1520, height: 1050))
         }
@@ -31,9 +31,8 @@ class SplashScene: SKScene {
         orientationLabel.zPosition = 3
         
         super.init(size: size)
-        addChild(background)
-        for i in 0..<6 {
-            self.textures.append(SKTexture(imageNamed: "Splash" + String(i)))
+        for i in 1...13 {
+            self.textures.append(SKTexture(imageNamed: "splash" + String(i)))
         }
     }
     
@@ -42,27 +41,19 @@ class SplashScene: SKScene {
     }
     override func didMove(to view: SKView) {
         self.scene?.scaleMode = .aspectFit
-        let splashTime: TimeInterval = 3
-        let wait = SKAction.wait(forDuration: splashTime * 2.3)
-        let action = SKAction.repeatForever(SKAction.animate(with: textures, timePerFrame: splashTime/(3*TimeInterval(textures.count)), resize: true, restore: true))
-        let play = SKAction.run {
-           // SoundManager.shared.playAudio(audio: "Electric", loop: true, volume: 0.1)
-        }
-        background.run(SKAction.group([action, play])) 
-        self.run(SKAction.wait(forDuration: splashTime)) {
-            self.addChild(self.orientation)
-            self.addChild(self.orientationLabel)
-            self.background.removeFromParent()
-        }
-        self.run(SKAction.wait(forDuration: splashTime)) {
-            SoundManager.shared.stopSounds()
-        }
-        self.run(wait) {
-            let mainMenuScene = MenuScene(size: self.size)
-            mainMenuScene.scaleMode = self.scaleMode
-            self.view?.presentScene(mainMenuScene)
-        }
+        let action = SKAction.animate(with: textures, timePerFrame: 3.5/TimeInterval(textures.count), resize: false, restore: false)
         
-        
+        self.addChild(self.orientation)
+        self.addChild(self.orientationLabel)
+        self.run(SKAction.wait(forDuration: 3)) {
+            self.orientation.removeFromParent()
+            self.orientationLabel.removeFromParent()
+            self.addChild(self.background)
+            self.background.run(SKAction.sequence([action, SKAction.wait(forDuration: 1.2)])) {
+                let mainMenuScene = MenuScene(size: self.size)
+                mainMenuScene.scaleMode = self.scaleMode
+                self.view?.presentScene(mainMenuScene)
+            }
+        }                
     }
 }

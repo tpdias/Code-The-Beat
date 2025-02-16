@@ -3,8 +3,6 @@ import SpriteKit
 import UIKit
 
 class FirstLevelScene: SKScene {    
-    //pause
-    var pauseNode: PauseNode
     var pianoNode: PianoNode
     var chatNode: ChatNode
     var codeNode: CodeNode
@@ -12,6 +10,7 @@ class FirstLevelScene: SKScene {
     var codeBackground: SKNode
     let beatbot: Beatbot
     var isPianoBlocked: Bool = false
+    var notePlayed = false
     
     var chats: [String] = [
         "Let's begin learning how to represent a note in code!",
@@ -26,7 +25,6 @@ class FirstLevelScene: SKScene {
         SoundManager.soundTrack.stopSounds()
         AppManager.shared.inGame = true
         
-        pauseNode = PauseNode(size: size)
         pianoNode = PianoNode(size: size)   
         chatNode = ChatNode(nodeSize: size, name: "BeatBot", message: chats[curChat])
         codeNode = CodeNode(varOrLet: "var", name: "note", type: false, equals: true, value: " ", fontSize: AppManager.shared.titleFontSize) 
@@ -44,9 +42,13 @@ class FirstLevelScene: SKScene {
     
     
     override func didMove(to view: SKView) {
-       
         //Background
-        backgroundColor = UIColor(AppColors.background)
+        let background = SKSpriteNode(imageNamed: "secundaryBackground")
+        background.size = size
+        background.anchorPoint = CGPoint(x: 0, y: 0)
+        background.position = CGPoint(x: 0, y: -25)
+        background.zPosition = -1
+        background.alpha = 0.6
         
         pianoNode.zPosition = 1
         pianoNode.position.x = self.size.width/2
@@ -59,6 +61,7 @@ class FirstLevelScene: SKScene {
         secondLineNode.zPosition = 2
         secondLineNode.position.x = codeNode.position.x - 50
         secondLineNode.position.y = size.height - 110 - AppManager.shared.titleFontSize*1.1       
+        secondLineNode.name = "secondLineNode"
         
         codeBackground = SKSpriteNode(texture: SKTexture(imageNamed: "chatBackground0"), size: CGSize(width: 0.6 * size.width, height: 150)) 
         
@@ -70,8 +73,7 @@ class FirstLevelScene: SKScene {
         addChild(pianoNode)
         addChild(codeBackground)
 //        addChild(appleBackground)
-        addChild(pauseNode)
-        
+        addChild(background)
         beatbot.animateTlk()
     }
     
@@ -80,24 +82,28 @@ class FirstLevelScene: SKScene {
             let location = touch.location(in: self)
             let touchedNode = atPoint(location)
             if let name = touchedNode.name {
-                pauseNode.checkPauseNodePressed(view: self, touchedNode: touchedNode)
                 if(!isPianoBlocked) {
                     if let note = pianoNode.checkTouchedNote(touchedNode) {
                         let particle = ParticleNote(position: location)
                         addChild(particle)
                         chatNode.addNextButton()
                         if curChat == 2 {
-                            codeNode.defineVariableVelue(value: note)
-                            isPianoBlocked = true
-                            nextChat()
-                            run(SKAction.wait(forDuration: 0.5)) {
-                                self.isPianoBlocked = false
-                            }
+                            if !notePlayed {
+                                notePlayed = true
+                                codeNode.defineVariableVelue(value: note)
+                                isPianoBlocked = true
+                                chatNode.addNextButton()
+                                run(SKAction.wait(forDuration: 0.5)) {
+                                    self.isPianoBlocked = false
+                                }
+                            }                        
                             break
                         } else {
                             if curChat == 3 {
-                                nextChat()
-                                self.addChild(secondLineNode)  
+                                chatNode.addNextButton()
+                                if(childNode(withName: "secondLineNode") == nil) {
+                                    self.addChild(secondLineNode)
+                                }
                                 self.secondLineNode.defineVariableVelue(value: note)
                                 
                                 break

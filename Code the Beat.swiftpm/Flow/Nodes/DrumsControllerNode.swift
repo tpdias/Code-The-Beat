@@ -83,20 +83,23 @@ class DrumsControllerNode: SKSpriteNode {
         
     }
     
-    func checkDrumsToutch(name: String) {
+    func checkDrumsToutch(name: String, label: SKLabelNode) {
         if let last = name.last {
             if let wrapperdIndex = Int(String(last)) {
                 let index = wrapperdIndex - 1
                 switch name.dropLast(1) {
-                case "drums":                    
+                case "drums":                                        
                     if let toBeRemovedIndex = pressedDrumsIndexes.firstIndex(of: index) {
                         pressedDrumsIndexes.remove(at: toBeRemovedIndex)
-                        baseButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        baseButtons[index].texture = SKTexture(imageNamed: "lightOff")                
                     } else {
                         baseButtons[index].texture = SKTexture(imageNamed: "lightOn")
-                        pressedDrumsIndexes.append(index)
+                        pressedDrumsIndexes.append(index)                        
                     }
+                    let newArray = pressedDrumsIndexes.map { value in
+                        value + 1
+                    }
+                    label.text = "\(newArray)"
                     if let toBeRemovedIndex = pressedHiHatsIndexes.firstIndex(of: index) {
                         pressedHiHatsIndexes.remove(at: toBeRemovedIndex)
                         hiHatsButtons[index].texture = SKTexture(imageNamed: "lightOff")

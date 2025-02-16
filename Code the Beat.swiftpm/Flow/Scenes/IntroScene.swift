@@ -3,7 +3,6 @@ import SpriteKit
 
 class IntroScene: SKScene {
     let chatNode: ChatNode
-    let pauseNode: PauseNode
     let beatbot: Beatbot
     
     let chats: [String] = [
@@ -15,7 +14,6 @@ class IntroScene: SKScene {
     
     override init(size: CGSize) {
         chatNode = ChatNode(nodeSize: size, name: "BeatBot", message: chats[0])
-        pauseNode = PauseNode(size: size)
         beatbot = Beatbot(size: CGSize(width: size.width*0.895/3, height: size.width/3), position: CGPoint(x: size.width/2, y: size.height/2))
         super.init(size: size)
         beatbot.animateTlk()
@@ -28,15 +26,14 @@ class IntroScene: SKScene {
     override func didMove(to view: SKView) {
         
         //Background
-        self.backgroundColor = .gray
-        //        let appleBackground: SKSpriteNode = SKSpriteNode(imageNamed: "GameBackground")
-        //        appleBackground.scale(to: size)
-        //        appleBackground.position = CGPoint(x: size.width/2, y: -25)
-        //        appleBackground.name = "background"
-        //        appleBackground.zPosition = 0
-        //        appleBackground.anchorPoint = CGPoint(x: 0.5, y: 0)
+        let background = SKSpriteNode(imageNamed: "primaryBackground")
+        background.size = size
+        background.anchorPoint = CGPoint(x: 0, y: 0)
+        background.position = CGPoint(x: 0, y: -25)
+        background.zPosition = -1
+        background.alpha = 0.6
         
-        addChild(pauseNode)
+        addChild(background)
         beginChat()
         addChild(beatbot)
     }
@@ -46,7 +43,6 @@ class IntroScene: SKScene {
             let location = touch.location(in: self)
             let touchedNode = atPoint(location)
             if let name = touchedNode.name {
-                pauseNode.checkPauseNodePressed(view: self, touchedNode: touchedNode)
                 if(name.contains("Button") && AppManager.shared.soundStatus && name != "nextButtonGray") {
                     SoundManager.shared.playButtonSound()                    
                 }
