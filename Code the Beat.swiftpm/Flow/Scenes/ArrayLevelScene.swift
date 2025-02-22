@@ -28,8 +28,8 @@ class ArrayLevelScene: SKScene {
         
         "Now that we have our chord sequence, let’s turn it into a loop!",
         "Notice that when you press the Play button, the sequence plays only once, but it iterates for every chord with a for.",
-        "Try pressing the loop button to see the loop function! This time we use a While to repeat the code while the condition is true.",
-        "Nice!"
+        "Try pressing the Loop button to see the loop function! This time we use a While to repeat the code while the condition is true.",
+        "Good job!"
         
     ]
     var curChat: Int = 0
@@ -68,7 +68,7 @@ class ArrayLevelScene: SKScene {
         let background = SKSpriteNode(imageNamed: "quarternaryBackground")
         background.size = size
         background.anchorPoint = CGPoint(x: 0, y: 0)
-        background.position = CGPoint(x: 0, y: -25)
+        background.position = CGPoint(x: 0, y: 25)
         background.zPosition = -1
         background.alpha = 0.6
         background.name = "background"
@@ -239,6 +239,7 @@ class ArrayLevelScene: SKScene {
         }
         
         draggedButton = nil
+        checkSlotsCompletion()
     }
     
     func checkLoopButtons(name: String) {
@@ -355,11 +356,23 @@ class ArrayLevelScene: SKScene {
                 count += 1
             }
         }
-        if(count == 4 && curChat == 3) {
+        if(count == 4 && (curChat == 3)) {
             nextChat()
             chatNode.addNextButton()
         }
+        else {
+            if(count < 4 && curChat == 4) {
+                chatNode.lockButton()
+            }
+            else {
+                if count == 4 && curChat == 4 {
+                    chatNode.addNextButton()
+                }
+            }
+        }
     }
+    
+    
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let button = draggedButton, let originalPosition = buttonOriginalPositions[button.name!] {
             let moveBack = SKAction.move(to: originalPosition, duration: 0.3)
@@ -484,7 +497,7 @@ class ArrayLevelScene: SKScene {
     
     func nextChat() {
         curChat += 1
-        if(curChat >= 8) {
+        if(curChat >= 9) {
             chatNode.changeButtonColor()
             transitionToNextScene()
         }

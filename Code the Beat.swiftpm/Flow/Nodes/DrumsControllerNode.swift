@@ -83,7 +83,7 @@ class DrumsControllerNode: SKSpriteNode {
         
     }
     
-    func checkDrumsToutch(name: String, label: SKLabelNode) {
+    func checkDrumsToutch(name: String, label: SKLabelNode) -> Int? {
         if let last = name.last {
             if let wrapperdIndex = Int(String(last)) {
                 let index = wrapperdIndex - 1
@@ -103,18 +103,19 @@ class DrumsControllerNode: SKSpriteNode {
                     if let toBeRemovedIndex = pressedHiHatsIndexes.firstIndex(of: index) {
                         pressedHiHatsIndexes.remove(at: toBeRemovedIndex)
                         hiHatsButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        return 1
                     }
                     if let toBeRemovedIndex = pressedSnareIndexes.firstIndex(of: index) {
                         pressedSnareIndexes.remove(at: toBeRemovedIndex)
                         snareButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        return 1
                     }
+                    return 1
                 case "hihat":      
                     if let toBeRemovedIndex = pressedHiHatsIndexes.firstIndex(of: index) {
                         pressedHiHatsIndexes.remove(at: toBeRemovedIndex)
                         hiHatsButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        return 1
                     } else {
                         hiHatsButtons[index].texture = SKTexture(imageNamed: "lightOn")
                         pressedHiHatsIndexes.append(index)
@@ -122,18 +123,19 @@ class DrumsControllerNode: SKSpriteNode {
                     if let toBeRemovedIndex = pressedDrumsIndexes.firstIndex(of: index) {
                         pressedDrumsIndexes.remove(at: toBeRemovedIndex)
                         baseButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        return 1
                     }
                     if let toBeRemovedIndex = pressedSnareIndexes.firstIndex(of: index) {
                         pressedSnareIndexes.remove(at: toBeRemovedIndex)
                         snareButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        return 1
                     }
+                    return 1
                 case "snare":
                     if let toBeRemovedIndex = pressedSnareIndexes.firstIndex(of: index) {
                         pressedSnareIndexes.remove(at: toBeRemovedIndex)
                         snareButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        return 1
                     }
                      else {
                     snareButtons[index].texture = SKTexture(imageNamed: "lightOn")
@@ -142,18 +144,20 @@ class DrumsControllerNode: SKSpriteNode {
                     if let toBeRemovedIndex = pressedDrumsIndexes.firstIndex(of: index) {
                         pressedDrumsIndexes.remove(at: toBeRemovedIndex)
                         baseButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        return 1
                     }
                     if let toBeRemovedIndex = pressedHiHatsIndexes.firstIndex(of: index) {
                         pressedHiHatsIndexes.remove(at: toBeRemovedIndex)
                         hiHatsButtons[index].texture = SKTexture(imageNamed: "lightOff")
-                        return
+                        return 1
                     }
+                    return 1
                 default:
-                    return
+                    return nil
                 }
             }
         }
+        return nil
     }
    
     func changeTempo(tempo: Int) {

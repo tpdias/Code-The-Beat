@@ -234,7 +234,6 @@ class CodeNode: SKNode {
         }
     }
     func defineVariableVelue(value: String) {
-        print("s")
         codeTextWhite.text = "\"\(value)\""
     }
     

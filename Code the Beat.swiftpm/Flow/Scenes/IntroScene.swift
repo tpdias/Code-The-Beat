@@ -29,7 +29,7 @@ class IntroScene: SKScene {
         let background = SKSpriteNode(imageNamed: "primaryBackground")
         background.size = size
         background.anchorPoint = CGPoint(x: 0, y: 0)
-        background.position = CGPoint(x: 0, y: -25)
+        background.position = CGPoint(x: 0, y: 0)
         background.zPosition = -1
         background.alpha = 0.6
         

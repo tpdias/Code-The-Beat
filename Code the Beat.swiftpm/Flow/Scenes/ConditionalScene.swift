@@ -31,7 +31,7 @@ class ConditionalScene: SKScene {
         "You’ve come a long way. Now, you understand how to use code to create music!",
         "With variables, functions, loops, and conditionals, you built your own beat from scratch!",
         "Pretty cool, right? Coding is like making music—it's all about structure and creativity.",
-        "If you’re eager to learn more, tap the Apple logo to explore the Apple Developer documentation and dive deeper into Swift!" ,
+        "If you’re eager to learn more, tap the Apple Developer logo to explore the Apple Developer documentation and dive deeper into Swift!" ,
         "Thank you for joining me in this journey, see you!"
     ]
     var conclusionCurChat: Int = 0
@@ -68,7 +68,7 @@ class ConditionalScene: SKScene {
         let background = SKSpriteNode(imageNamed: "terciaryBackground")
         background.size = size
         background.anchorPoint = CGPoint(x: 0, y: 0)
-        background.position = CGPoint(x: 0, y: -25)
+        background.position = CGPoint(x: 0, y: 25)
         background.zPosition = -1
         background.alpha = 0.6
         background.name = "background"
@@ -170,7 +170,9 @@ class ConditionalScene: SKScene {
                     SoundManager.shared.playToggleSound()
                     continue
                 }           
-                drumsControllerNode.checkDrumsToutch(name: name, label: conditionalNode.drumTemposValues)                 
+                if ((drumsControllerNode.checkDrumsToutch(name: name, label: conditionalNode.drumTemposValues) != nil) && (curChat == 2) && (chatNode.nextButtonTemp.name?.contains("Gray") != nil)) {
+                    chatNode.changeButtonColor()
+                }                 
                 if name == "appleDeveloper" {
                     if let url = URL(string: "https://developer.apple.com/documentation/swift/") {
                         UIApplication.shared.open(url)
@@ -342,7 +344,8 @@ class ConditionalScene: SKScene {
                 codeBackground.run(SKAction.fadeIn(withDuration: 0.3))              
             }
             if(curChat == 2) {
-                  playLoop()
+                chatNode.lockButton()
+                playLoop()
             }
         }
     }

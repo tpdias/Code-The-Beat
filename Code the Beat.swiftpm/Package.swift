@@ -10,18 +10,18 @@ import AppleProductTypes
 let package = Package(
     name: "Code the Beat",
     platforms: [
-        .iOS("17.0")
+        .iOS("17.5")
     ],
     products: [
         .iOSApplication(
             name: "Code the Beat",
             targets: ["AppModule"],
-            bundleIdentifier: "com.parallelo.app",
+            bundleIdentifier: "com.codethebeat.app",
             teamIdentifier: "DFJUFQ6A3N",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .note),
-            accentColor: .presetColor(.indigo),
+            appIcon: .asset("AppIcon"),
+            accentColor: .presetColor(.cyan),
             supportedDeviceFamilies: [
                 .pad,
                 .phone

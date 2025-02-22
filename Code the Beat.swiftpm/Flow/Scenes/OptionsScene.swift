@@ -7,7 +7,7 @@ class OptionsScene: SKScene {
         //Background
         let background = SKSpriteNode(imageNamed: "MenuBackground")
         background.scale(to: size)
-        background.position = CGPoint(x: size.width/2, y: size.height/2 - 25)
+        background.position = CGPoint(x: size.width/2, y: size.height/2)
         background.zPosition = -1
         background.alpha = 0.5
         addChild(background)        

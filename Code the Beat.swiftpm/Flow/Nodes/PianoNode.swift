@@ -35,7 +35,6 @@ class PianoNode: SKNode {
         background.position = CGPoint(x: -keyWidth, y: keyHeight/1.5)
         background.zPosition = 1
         var backgroundTextures: [SKTexture] = []
-        print("teste")
         for i in 1...6 {
             backgroundTextures.append(SKTexture(imageNamed: "keyboardBackground\(i)"))
         }
